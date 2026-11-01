@@ -1,18 +1,252 @@
 // Estado compartido entre el panel del colaborador y la pantalla del cliente.
 // Se sincroniza con BroadcastChannel + localStorage (misma PC, sin internet).
 const PC = (() => {
-  const KEY = 'pc_state_v1';
+  const KEY = 'pc_state_v2';
   const ch = 'BroadcastChannel' in window ? new BroadcastChannel('pc_channel') : null;
   const DEFAULT = {
     items: [],            // {code,name,price,qty}
     status: 'idle',       // idle | venta | gracias
     catalog: [
-      { code: '1001', name: 'Canchita grande', price: 15 },
-      { code: '1002', name: 'Canchita mediana', price: 12 },
-      { code: '1003', name: 'Gaseosa 22oz', price: 8 },
-      { code: '1004', name: 'Hot dog', price: 9 },
-      { code: '1005', name: 'Combo 1 (canchita + gaseosa)', price: 20 },
-      { code: '1006', name: 'Chocolate', price: 5 }
+      {
+        "code": "2512",
+        "name": "Combo 1",
+        "price": 23.5,
+        "cat": "Combos Salada"
+      },
+      {
+        "code": "3088",
+        "name": "Combo 1 + Hot Dog",
+        "price": 32.4,
+        "cat": "Combos Salada"
+      },
+      {
+        "code": "2517",
+        "name": "Combo 2",
+        "price": 28.5,
+        "cat": "Combos Salada"
+      },
+      {
+        "code": "2518",
+        "name": "Combo 2 + Hot Dog",
+        "price": 37.4,
+        "cat": "Combos Salada"
+      },
+      {
+        "code": "2484",
+        "name": "Combo 3",
+        "price": 33.5,
+        "cat": "Combos Salada"
+      },
+      {
+        "code": "2485",
+        "name": "Combo 3 + Hot Dog",
+        "price": 42.4,
+        "cat": "Combos Salada"
+      },
+      {
+        "code": "2488",
+        "name": "Combo 4",
+        "price": 37.5,
+        "cat": "Combos Salada"
+      },
+      {
+        "code": "2489",
+        "name": "Combo 4 + Hot Dog",
+        "price": 46.4,
+        "cat": "Combos Salada"
+      },
+      {
+        "code": "2611",
+        "name": "Combo Dulce 1",
+        "price": 26.0,
+        "cat": "Combos Dulce"
+      },
+      {
+        "code": "2612",
+        "name": "Combo Dulce 2",
+        "price": 31.5,
+        "cat": "Combos Dulce"
+      },
+      {
+        "code": "2613",
+        "name": "Mixto 3",
+        "price": 36.5,
+        "cat": "Combos Dulce"
+      },
+      {
+        "code": "2614",
+        "name": "Mixto 4",
+        "price": 40.0,
+        "cat": "Combos Dulce"
+      },
+      {
+        "code": "3135",
+        "name": "Power Salad",
+        "price": 35.5,
+        "cat": "Combos Bar"
+      },
+      {
+        "code": "3133",
+        "name": "Power Dulce",
+        "price": 35.5,
+        "cat": "Combos Bar"
+      },
+      {
+        "code": "3615",
+        "name": "VIP Individual",
+        "price": 26.5,
+        "cat": "Combos Vip"
+      },
+      {
+        "code": "3616",
+        "name": "VIP Dúo",
+        "price": 39.9,
+        "cat": "Combos Vip"
+      },
+      {
+        "code": "3617",
+        "name": "VIP Trío",
+        "price": 54.9,
+        "cat": "Combos Vip"
+      },
+      {
+        "code": "0031",
+        "name": "Pop Corn Salada Chico",
+        "price": 14.0,
+        "cat": "Salada"
+      },
+      {
+        "code": "0032",
+        "name": "Pop Corn Salada Mediano",
+        "price": 15.0,
+        "cat": "Salada"
+      },
+      {
+        "code": "0033",
+        "name": "Pop Corn Salada Grande",
+        "price": 17.0,
+        "cat": "Salada"
+      },
+      {
+        "code": "0047",
+        "name": "Pop Corn Salada Gigante",
+        "price": 25.0,
+        "cat": "Salada"
+      },
+      {
+        "code": "2606",
+        "name": "Pop Corn Dulce Chico",
+        "price": 17.5,
+        "cat": "Dulce"
+      },
+      {
+        "code": "2607",
+        "name": "Pop Corn Dulce Mediana",
+        "price": 18.5,
+        "cat": "Dulce"
+      },
+      {
+        "code": "2608",
+        "name": "Pop Corn Dulce Grande",
+        "price": 20.5,
+        "cat": "Dulce"
+      },
+      {
+        "code": "2609",
+        "name": "Pop Corn Dulce Gigante",
+        "price": 30.0,
+        "cat": "Dulce"
+      },
+      {
+        "code": "2085",
+        "name": "Gaseosa Vaso Chico",
+        "price": 8.0,
+        "cat": "Bebidas"
+      },
+      {
+        "code": "2086",
+        "name": "Gaseosa Vaso Mediano",
+        "price": 10.0,
+        "cat": "Bebidas"
+      },
+      {
+        "code": "2087",
+        "name": "Gaseosa Vaso Grande",
+        "price": 11.5,
+        "cat": "Bebidas"
+      },
+      {
+        "code": "0026",
+        "name": "Agua",
+        "price": 6.5,
+        "cat": "Bebidas"
+      },
+      {
+        "code": "3090",
+        "name": "Chicha Botella",
+        "price": 4.5,
+        "cat": "Bebidas"
+      },
+      {
+        "code": "3830",
+        "name": "Pepero",
+        "price": 8.0,
+        "cat": "Golosinas Y Otros"
+      },
+      {
+        "code": "0009",
+        "name": "Wafer",
+        "price": 5.0,
+        "cat": "Golosinas Y Otros"
+      },
+      {
+        "code": "1911",
+        "name": "Gomita Ambrosito",
+        "price": 3.5,
+        "cat": "Golosinas Y Otros"
+      },
+      {
+        "code": "0016",
+        "name": "Lenteja Cajita",
+        "price": 5.0,
+        "cat": "Golosinas Y Otros"
+      },
+      {
+        "code": "3831",
+        "name": "Choco Pie",
+        "price": 3.5,
+        "cat": "Golosinas Y Otros"
+      },
+      {
+        "code": "2527",
+        "name": "Cañonazo",
+        "price": 3.5,
+        "cat": "Golosinas Y Otros"
+      },
+      {
+        "code": "2899",
+        "name": "Nacho",
+        "price": 13.5,
+        "cat": "Golosinas Y Otros"
+      },
+      {
+        "code": "0013",
+        "name": "Sublime Clásico",
+        "price": 5.0,
+        "cat": "Golosinas Y Otros"
+      },
+      {
+        "code": "0004",
+        "name": "Travesuras",
+        "price": 5.0,
+        "cat": "Golosinas Y Otros"
+      },
+      {
+        "code": "2823",
+        "name": "Pizza Personal",
+        "price": 17.5,
+        "cat": "Golosinas Y Otros"
+      }
     ],
     slides: [
       { title: 'Combo Movie Time', sub: 'Canchita grande + 2 gaseosas a precio especial', image: '' },
