@@ -1,29 +1,40 @@
-:root{--bg:#0f1226;--card:#1b1f3b;--acc:#ffb703;--ok:#2ecc71;--bad:#e5484d;--txt:#f4f5ff;--mut:#9aa0c7}
+/* Línea gráfica Movie Time: azul real, dorado, rojo, blanco */
+:root{--blue:#0f1198;--blue2:#1a1fe0;--blue3:#000f8f;--gold:#ffd23f;--red:#d9000d;--bg:#f5f7fb;--ink:#111827;--mut:#52525b;--line:#e6e6ea;--ok:#12a150}
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--txt)}
-button{cursor:pointer;border:0;border-radius:8px;padding:10px 16px;font-size:1rem;background:var(--acc);color:#000;font-weight:700}
-button.sec{background:#2b3060;color:var(--txt)} button.ok{background:var(--ok)} button.bad{background:var(--bad);color:#fff}
-input{padding:10px;border-radius:8px;border:1px solid #3a4080;background:#12152e;color:var(--txt);font-size:1rem}
+body{font-family:ui-sans-serif,system-ui,"Segoe UI",Arial,sans-serif;background:var(--bg);color:var(--ink)}
+button{cursor:pointer;border:0;border-radius:999px;padding:10px 18px;font-size:1rem;background:var(--blue);color:#fff;font-weight:700}
+button:hover{background:var(--blue2)}
+button.sec{background:#e8eaff;color:var(--blue)} button.ok{background:var(--ok)} button.bad{background:var(--red)}
+input,textarea{padding:10px 14px;border-radius:10px;border:1px solid #cfd3e6;background:#fff;color:var(--ink);font-size:1rem}
+.brand{display:flex;align-items:center;gap:14px;background:linear-gradient(90deg,var(--blue),var(--blue2));color:#fff;padding:10px 24px}
+.brand .logo{background:#fff;border-radius:10px;padding:6px 10px;display:flex}.brand .logo img{height:44px}
+.brand h1{font-size:1.4rem}
 /* Operador */
-.op{display:grid;grid-template-columns:1fr 1.2fr;gap:16px;padding:16px;height:100vh}
-.panel{background:var(--card);border-radius:12px;padding:16px;overflow:auto}
-.panel h2{margin-bottom:10px;color:var(--acc)}
+.page{display:flex;flex-direction:column;height:100vh}
+.op{flex:1;display:grid;grid-template-columns:1fr 1.2fr;gap:16px;padding:16px;min-height:0}
+.panel{background:#fff;border-radius:16px;padding:18px;overflow:auto;box-shadow:0 2px 12px #0f119822}
+.panel h2{margin-bottom:12px;color:var(--blue)}
 .row{display:flex;gap:8px;margin-bottom:10px;align-items:center}.row input{flex:1}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
-.prod{background:#262b52;padding:12px;border-radius:10px;text-align:left;color:var(--txt)}
-.prod small{display:block;color:var(--mut)} .prod b{color:var(--acc)}
-table{width:100%;border-collapse:collapse} td,th{padding:6px;text-align:left;border-bottom:1px solid #2f3566}
-.tot{font-size:2rem;text-align:right;margin:12px 0;color:var(--acc)}
-.msg{color:var(--bad);min-height:1.2em} details{margin-top:14px} textarea{width:100%;height:120px;background:#12152e;color:var(--txt);border:1px solid #3a4080;border-radius:8px;padding:8px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.prod{background:var(--bg);padding:12px;border-radius:14px;text-align:left;color:var(--ink);border:2px solid transparent}
+.prod:hover{border-color:var(--blue2);background:#eef0ff}
+.prod small{display:block;color:var(--mut);font-weight:400}.prod b{color:var(--red)}
+table{width:100%;border-collapse:collapse}td,th{padding:8px;text-align:left;border-bottom:1px solid var(--line)}th{color:var(--mut)}
+.tot{font-size:2.2rem;text-align:right;margin:14px 0;color:var(--blue);font-weight:800}
+.msg{color:var(--red);min-height:1.2em}details{margin-top:14px}summary{cursor:pointer;color:var(--blue);font-weight:700}
+textarea{width:100%;height:120px}
 /* Cliente */
-.cl{height:100vh;display:flex;flex-direction:column;overflow:hidden;cursor:none}
-.cl header{padding:20px 40px;font-size:2.2rem;font-weight:800;background:#0a0c1c;color:var(--acc)}
+.cl{height:100vh;display:flex;flex-direction:column;overflow:hidden;cursor:none;background:var(--bg);position:relative}
+.cl .brand{padding:14px 40px}.cl .brand .logo img{height:64px}.cl .brand h1{font-size:2.4rem;color:var(--gold)}
 .cl .list{flex:1;padding:10px 40px;overflow:auto}
-.line{display:grid;grid-template-columns:90px 1fr 200px;font-size:2.2rem;padding:14px 0;border-bottom:1px solid #2f3566}
-.line .q{color:var(--acc);font-weight:800}.line .p{text-align:right}
-.cl footer{padding:20px 40px;background:#0a0c1c;display:flex;justify-content:space-between;font-size:3.4rem;font-weight:800}
-.cl footer span:last-child{color:var(--ok)}
-.full{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px;background:var(--bg) center/cover no-repeat}
-.full h1{font-size:5rem;text-shadow:0 4px 20px #000}.full p{font-size:2.4rem;margin-top:20px;text-shadow:0 2px 10px #000}
-.fade{animation:f .8s} @keyframes f{from{opacity:0}to{opacity:1}}
+.line{display:grid;grid-template-columns:110px 1fr 230px;font-size:2.3rem;padding:16px 0;border-bottom:2px solid var(--line);animation:f .4s}
+.line .q{color:var(--red);font-weight:800}.line .p{text-align:right;font-weight:700;color:var(--blue)}
+.cl footer{padding:18px 40px;background:#111;color:#fff;display:flex;justify-content:space-between;align-items:center;font-size:3.4rem;font-weight:800;border-top:6px solid var(--red)}
+.cl footer span:last-child{color:var(--gold)}
+.empty{font-size:2.4rem;color:var(--mut);text-align:center;margin-top:12vh}
+.full{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px;color:#fff;background:radial-gradient(circle at 50% 30%,var(--blue2),var(--blue) 70%) center/cover no-repeat}
+.full img.lg{background:#fff;border-radius:16px;padding:12px 20px;height:110px;margin-bottom:30px}
+.full h1{font-size:5.5rem;font-weight:900;text-transform:uppercase;background:linear-gradient(#fff,var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 4px 10px #0008)}
+.full p{font-size:2.5rem;margin-top:20px;font-weight:600;text-shadow:0 2px 10px #0008}
+.fade{animation:f .8s}@keyframes f{from{opacity:0}to{opacity:1}}
 .hide{display:none!important}

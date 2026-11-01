@@ -1,11 +1,11 @@
 <!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Pantalla cliente</title><link rel="stylesheet" href="style.css"></head><body>
 <div class="cl">
- <header>🎬 Movie Time — Tu pedido</header>
+ <div class="brand"><span class="logo"><img src="logo-movietime.svg" alt="Movie Time"></span><h1>Tu pedido</h1></div>
  <div class="list" id="list"></div>
  <footer><span>TOTAL</span><span id="tot"></span></footer>
- <div class="full hide fade" id="thanks"><h1>¡Gracias por tu compra!</h1><p>Disfruta la función 🍿</p></div>
- <div class="full hide" id="ads"><h1 id="at"></h1><p id="as"></p></div>
+ <div class="full hide fade" id="thanks"><img class="lg" src="logo-movietime.svg" alt=""><h1>¡Gracias por tu compra!</h1><p>Disfruta la función 🍿</p></div>
+ <div class="full hide" id="ads"><img class="lg" src="logo-movietime.svg" alt=""><h1 id="at"></h1><p id="as"></p></div>
 </div>
 <script src="shared.js"></script>
 <script>
@@ -15,7 +15,7 @@ document.addEventListener('dblclick',()=>document.fullscreenElement?document.exi
 function render(s){
   const sig=JSON.stringify([s.items,s.status]);
   if(sig!==lastSig){lastSig=sig;lastChange=Date.now()}
-  $('list').innerHTML=s.items.map(i=>`<div class="line"><span class="q">${i.qty}x</span><span>${i.name}</span><span class="p">${PC.money(i.price*i.qty)}</span></div>`).join('');
+  $('list').innerHTML=!s.items.length?'<div class="empty">¡Bienvenido a Movie Time!</div>':s.items.map(i=>`<div class="line"><span class="q">${i.qty}x</span><span>${i.name}</span><span class="p">${PC.money(i.price*i.qty)}</span></div>`).join('');
   $('tot').textContent=PC.money(PC.total());
   $('thanks').classList.toggle('hide',s.status!=='gracias');
   check();
@@ -29,7 +29,7 @@ function check(){
 function showSlide(){
   const sl=PC.state.slides;if(!sl.length)return;const x=sl[slide++%sl.length];
   $('at').textContent=x.title;$('as').textContent=x.sub;
-  $('ads').style.backgroundImage=x.image?`linear-gradient(#0008,#0008),url("${x.image}")`:'';
+  $('ads').style.backgroundImage=x.image?`linear-gradient(#0006,#0006),url("${x.image}")`:'';
   $('ads').classList.remove('fade');void $('ads').offsetWidth;$('ads').classList.add('fade');
 }
 PC.subscribe(render);setInterval(check,1000);
