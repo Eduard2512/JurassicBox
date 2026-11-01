@@ -7,6 +7,15 @@ INSTALAR
 - Descomprimir MovieTime.zip: trae las dos carpetas juntas (enlace-movietime y pantalla-cliente).
 - Si estan en otro lugar, el script busca pantalla-cliente solo; si no la encuentra te pide seleccionarla una vez.
 
+MODOS DE ENVIO (en el panel del colaborador, "Enviar a TumiSoft")
+- Mientras agrego: cada producto se escribe en TumiSoft apenas lo agregas en el panel.
+- Al final de la venta: agregas todo en el panel (el cliente lo va viendo) y al terminar pulsas
+  "Enviar a TumiSoft (N productos)". El script escribe la lista completa, uno por uno, en orden
+  (si un producto lleva cantidad 2, se escribe 2 veces). No mover el mouse ni el teclado mientras envia.
+  El boton solo envia lo que falta, asi no se duplican productos si agregas mas despues.
+- No enviar: solo se actualiza la pantalla del cliente.
+La velocidad entre productos se cambia con PausaEntreProductos (al inicio del .ahk).
+
 USO
 1. Abrir TumiSoft. Doble clic en MovieTime-Enlace.ahk (icono nuevo junto al reloj).
 2. Se abren el panel del colaborador y la pantalla del cliente.

@@ -8,8 +8,8 @@ Ambas ventanas deben abrirse en el mismo navegador (Chrome/Edge). Funciona sin i
 
 ## Enlace con TumiSoft (opcional)
 Está en la carpeta `enlace-movietime/` (solo texto, sin imágenes). Ver `enlace-movietime/LEEME.txt`.
-Cada producto que el colaborador agrega en el panel web se escribe también en el buscador de TumiSoft + Enter.
-Casilla **Enviar también a TumiSoft** en el panel para activarlo o no. Quitar productos (− / ✕) solo cambia la pantalla del cliente:
+En el panel, **Enviar a TumiSoft** tiene tres modos: *Mientras agrego* (cada producto se escribe en el buscador de TumiSoft + Enter al agregarlo),
+*Al final de la venta* (botón que escribe toda la lista, uno por uno) y *No enviar*. Quitar productos (− / ✕) solo cambia la pantalla del cliente:
 hay que quitarlo también en TumiSoft. El panel debe estar abierto y no llevar "TumiSoft" en su título.
 
 ## Personalizar

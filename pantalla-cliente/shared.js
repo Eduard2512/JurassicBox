@@ -360,24 +360,28 @@ const PC = (() => {
     // Enlace con TumiSoft: el panel publica el codigo en el titulo de su ventana
     // (MTCMD|<seq>:<codigo>;...|) y MovieTime-Enlace.ahk lo lee y lo escribe en TumiSoft.
     link: (() => {
-      const K = 'pc_link_on', base = document.title;
+      const K = 'pc_link_mode', base = document.title;   // modo: live | end | off
       let q = [], last = 0, timer = 0;
-      const get = () => { try { return localStorage.getItem(K) !== '0'; } catch (e) { return true; } };
+      const clean = c => String(c || '').replace(/[^A-Za-z0-9]/g, '');
+      const getMode = () => {
+        try { const m = localStorage.getItem(K); if (m) return m; return localStorage.getItem('pc_link_on') === '0' ? 'off' : 'live'; }
+        catch (e) { return 'live'; }
+      };
+      const publish = codes => {
+        const now = Date.now();
+        q = q.filter(c => now - c.t < 10000);
+        codes.forEach(code => { const seq = Math.max(last + 1, Date.now() * 1000); last = seq; q.push({ seq, code, t: now }); });
+        document.title = base + ' MTCMD|' + q.map(c => c.seq + ':' + c.code).join(';') + '|';
+        clearTimeout(timer);
+        timer = setTimeout(() => { document.title = base; q = []; }, Math.min(20000, 1500 + 450 * q.length));
+      };
       return {
-        get on() { return get(); },
-        set on(v) { try { localStorage.setItem(K, v ? '1' : '0'); } catch (e) {} },
-        send(code) {
-          code = String(code || '').replace(/[^A-Za-z0-9]/g, '');
-          if (!code || !get()) return;
-          const seq = Math.max(last + 1, Date.now() * 1000);
-          last = seq;
-          const now = Date.now();
-          q = q.filter(c => now - c.t < 3000).slice(-5);
-          q.push({ seq, code, t: now });
-          document.title = base + ' MTCMD|' + q.map(c => c.seq + ':' + c.code).join(';') + '|';
-          clearTimeout(timer);
-          timer = setTimeout(() => { document.title = base; }, 1500);
-        }
+        get mode() { return getMode(); },
+        set mode(v) { try { localStorage.setItem(K, v); } catch (e) {} },
+        // modo "mientras agrego": envia el codigo de inmediato
+        send(code) { code = clean(code); if (code && getMode() === 'live') { publish([code]); return true; } return false; },
+        // modo "al final": envia una lista de codigos (uno por uno, en orden)
+        sendMany(codes) { codes = codes.map(clean).filter(Boolean); if (codes.length && getMode() !== 'off') { publish(codes); return true; } return false; }
       };
     })(),
     reset() { localStorage.removeItem(KEY); refresh(); }

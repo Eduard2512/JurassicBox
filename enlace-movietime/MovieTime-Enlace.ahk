@@ -24,6 +24,7 @@ AbrirAlIniciar       := true     ; abre el panel y la pantalla del cliente al in
 PanelSiempreAlFrente := true     ; mantiene el panel del colaborador visible sobre TumiSoft
 PanelNoActivar       := true     ; el panel NO le quita el foco a TumiSoft al hacer clic (como el panel antiguo de AutoHotkey)
 SiempreClicBuscador  := false    ; true = hace clic en el buscador (si esta calibrado) aunque TumiSoft ya este activa
+PausaEntreProductos  := 350      ; milisegundos entre un producto y otro cuando se envia una lista completa
 PanelAncho           := 1000     ; tamano de la ventana del panel del colaborador
 PanelAlto            := 720
 
@@ -142,6 +143,7 @@ if (!Inicializado)
     return
 }
 
+nuevos := []
 Loop, Parse, resto, `;
 {
     partes := StrSplit(A_LoopField, ":")
@@ -150,9 +152,13 @@ Loop, Parse, resto, `;
     if (s > UltimoSeq && codigo != "")
     {
         UltimoSeq := s
-        Log("Comando recibido del panel: " . codigo)
-        EnviarATumi(codigo)
+        nuevos.Push(codigo)
     }
+}
+if (nuevos.Length() > 0)
+{
+    Log("Comandos recibidos del panel: " . nuevos.Length())
+    EnviarLote(nuevos)
 }
 return
 
@@ -298,14 +304,22 @@ return
 ;  FUNCIONES
 ; ============================================================
 
-; Escribe el codigo en TumiSoft + Enter (igual que el panel anterior, con mas esperas y avisos)
+; Un solo codigo
 EnviarATumi(codigo)
 {
-    global BuscadorX, BuscadorY, SiempreClicBuscador
+    EnviarLote([codigo])
+}
+
+; Escribe uno o varios codigos en TumiSoft, uno por uno (codigo + Enter).
+; Activa TumiSoft y hace el clic en el buscador UNA sola vez, al inicio del lote.
+EnviarLote(codigos)
+{
+    global BuscadorX, BuscadorY, SiempreClicBuscador, PausaEntreProductos
+    total := codigos.Length()
     id := BuscarTumiSoft()
     if (!id)
     {
-        Log("ERROR: no encuentro la ventana de TumiSoft (codigo " . codigo . ")")
+        Log("ERROR: no encuentro la ventana de TumiSoft (" . total . " codigo(s))")
         Aviso("No encuentro la ventana de TumiSoft.`nClic derecho en el icono de la bandeja > Mostrar ventanas detectadas")
         return
     }
@@ -326,10 +340,11 @@ EnviarATumi(codigo)
         clic := true
     if (clic)
     {
+        SetMouseDelay, 0
         CoordMode, Mouse, Screen
         MouseGetPos, ox, oy
         CoordMode, Mouse, Window
-        Click, %BuscadorX%, %BuscadorY%
+        MouseClick, Left, %BuscadorX%, %BuscadorY%, 1, 0
         Sleep, 200
         CoordMode, Mouse, Screen
         MouseMove, %ox%, %oy%, 0
@@ -338,8 +353,35 @@ EnviarATumi(codigo)
         Sleep, 50
     }
     SetKeyDelay, 40
-    SendEvent, %codigo%{Enter}
-    Log("Enviado a TumiSoft: " . codigo . "  (ventana: " . t . " | ya activa: " . (yaActiva ? "si" : "no") . " | clic en buscador: " . (clic ? "si" : "no") . ")")
+    enviados := 0
+    for i, codigo in codigos
+    {
+        ; si el usuario cambio de ventana a mitad del envio, se corta para no escribir en otro programa
+        if (!WinActive("ahk_id " . id))
+        {
+            WinActivate, ahk_id %id%
+            WinWaitActive, ahk_id %id%,, 2
+            if (ErrorLevel)
+            {
+                Log("ERROR: se perdio TumiSoft a mitad del envio (" . enviados . " de " . total . ")")
+                Aviso("Envio detenido: TumiSoft dejo de estar activa (" . enviados . " de " . total . " enviados)")
+                return
+            }
+            Sleep, 150
+        }
+        if (total > 1)
+        {
+            msg := "Enviando a TumiSoft: " . i . " de " . total . "  (no muevas el mouse ni el teclado)"
+            ToolTip, %msg%
+        }
+        SendEvent, %codigo%{Enter}
+        enviados++
+        Log("Enviado a TumiSoft: " . codigo . "  (" . i . "/" . total . ", ventana: " . t . ", ya activa: " . (yaActiva ? "si" : "no") . ", clic en buscador: " . (clic ? "si" : "no") . ")")
+        if (i < total)
+            Sleep, %PausaEntreProductos%
+    }
+    if (total > 1)
+        Aviso("Listo: " . total . " producto(s) enviados a TumiSoft", 2500)
 }
 
 ; Busca la ventana de TumiSoft por nombre del .exe o por el titulo

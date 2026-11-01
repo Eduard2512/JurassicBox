@@ -18,9 +18,14 @@
  </section>
  <section class="panel">
   <h2>Venta actual</h2>
-  <label class="lnk"><input type="checkbox" id="lnk"> Enviar también a TumiSoft <small>(requiere MovieTime-Enlace.ahk abierto)</small></label>
+  <div class="lnk"><b>Enviar a TumiSoft:</b>
+   <label><input type="radio" name="lm" value="live"> Mientras agrego</label>
+   <label><input type="radio" name="lm" value="end"> Al final de la venta</label>
+   <label><input type="radio" name="lm" value="off"> No enviar</label>
+   <small>(requiere MovieTime-Enlace.ahk abierto)</small></div>
   <table><thead><tr><th>Producto</th><th>Cant.</th><th>Subtotal</th><th></th></tr></thead><tbody id="body"></tbody></table>
   <div class="tot" id="tot"></div>
+  <button class="ok hide" id="sendTumi" style="width:100%;margin-bottom:8px"></button>
   <p class="hint" id="hint">Para quitar un producto de la venta, bórralo también en TumiSoft.</p>
   <div class="row"><button class="ok" id="fin">Finalizar venta</button><button class="bad" id="clr">Cancelar</button></div>
  </section>
@@ -29,6 +34,9 @@
 <script>
 const $=id=>document.getElementById(id);
 let tab='';
+const sent={};   // codigo -> unidades que ya se enviaron a TumiSoft en esta venta
+function sendLive(code){const ok=PC.link.send(code);if(ok)sent[code]=(sent[code]||0)+1;return ok}
+function pending(){const codes=[],items=[];PC.state.items.forEach(i=>{const n=Math.max(0,i.qty-(sent[i.code]||0));if(n>0){items.push([i.code,n]);for(let k=0;k<n;k++)codes.push(i.code)}});return{codes,items}}
 function render(s){
   const cats=[...new Set(s.catalog.map(p=>p.cat||'Otros'))];
   if(tab&&!cats.includes(tab))tab='';
@@ -36,17 +44,24 @@ function render(s){
   $('grid').innerHTML=s.catalog.filter(p=>!tab||(p.cat||'Otros')===tab).map(p=>`<button class="prod" data-c="${p.code}">${p.name}<small>${p.code}</small><b>${PC.money(p.price)}</b></button>`).join('');
   $('body').innerHTML=s.items.map((i,n)=>`<tr><td>${i.name}</td><td><button class="sec" data-m="${n}">−</button> ${i.qty} <button class="sec" data-p="${n}">+</button></td><td>${PC.money(i.price*i.qty)}</td><td><button class="bad" data-x="${n}">✕</button></td></tr>`).join('');
   $('tot').textContent='Total: '+PC.money(PC.total());
+  if(!s.items.length)for(const k in sent)delete sent[k];
+  const p=pending(),end=PC.link.mode==='end';
+  $('sendTumi').classList.toggle('hide',!end);
+  $('sendTumi').disabled=!p.codes.length;
+  $('sendTumi').textContent=p.codes.length?'Enviar a TumiSoft ('+p.codes.length+' producto'+(p.codes.length>1?'s':'')+')':(s.items.length?'✔ Todo enviado a TumiSoft':'Enviar a TumiSoft');
 }
 PC.subscribe(render);
 $('tabs').onclick=e=>{const b=e.target.closest('[data-t]');if(b){tab=b.dataset.t==='Todos'?'':b.dataset.t;render(PC.state)}};
-$('grid').onclick=e=>{const b=e.target.closest('[data-c]');if(b){PC.addByCode(b.dataset.c);PC.link.send(b.dataset.c);$('code').focus()}};
+$('grid').onclick=e=>{const b=e.target.closest('[data-c]');if(b){PC.addByCode(b.dataset.c);sendLive(b.dataset.c);$('code').focus()}};
 $('body').onclick=e=>{const t=e.target;
-  if(t.dataset.m)PC.setQty(+t.dataset.m,-1);if(t.dataset.p){const it=PC.state.items[+t.dataset.p];PC.setQty(+t.dataset.p,1);if(it)PC.link.send(it.code)}if(t.dataset.x)PC.remove(+t.dataset.x)};
+  if(t.dataset.m)PC.setQty(+t.dataset.m,-1);if(t.dataset.p){const it=PC.state.items[+t.dataset.p];PC.setQty(+t.dataset.p,1);if(it)sendLive(it.code)}if(t.dataset.x)PC.remove(+t.dataset.x)};
 function addCode(){const v=$('code').value.trim();if(!v)return;
-  const ok=PC.addByCode(v);PC.link.send(v);
-  $('msg').textContent=ok?'':(PC.link.on?'No está en el catálogo de la pantalla (se envió a TumiSoft): '+v:'Código no encontrado: '+v);
+  const ok=PC.addByCode(v);const sent1=sendLive(v);
+  $('msg').textContent=ok?'':(sent1?'No está en el catálogo de la pantalla (se envió a TumiSoft): '+v:'Código no encontrado: '+v);
   $('code').value='';$('code').focus()}
-$('lnk').checked=PC.link.on;$('lnk').onchange=()=>{PC.link.on=$('lnk').checked};
+document.querySelectorAll('input[name=lm]').forEach(r=>{r.checked=r.value===PC.link.mode;r.onchange=()=>{if(r.checked){PC.link.mode=r.value;$('msg').textContent='';render(PC.state)}}});
+$('sendTumi').onclick=()=>{const p=pending();if(!p.codes.length)return;
+  if(PC.link.sendMany(p.codes)){p.items.forEach(([c,n])=>sent[c]=(sent[c]||0)+n);$('msg').textContent='Enviando '+p.codes.length+' producto(s) a TumiSoft… no muevas el mouse ni el teclado.';render(PC.state)}};
 $('addBtn').onclick=addCode;$('code').onkeydown=e=>{if(e.key==='Enter')addCode()};
 $('fin').onclick=()=>{if(PC.state.items.length){PC.finish();setTimeout(()=>PC.clear(),6000)}};
 $('clr').onclick=()=>PC.clear();
