@@ -1,35 +1,95 @@
 <!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Pantalla cliente</title><link rel="stylesheet" href="style.css"></head><body>
-<div class="cl">
- <div class="brand"><span class="logo"><img src="logo-movietime.svg" alt="Movie Time"></span><h1>Tu pedido</h1></div>
- <div class="list" id="list"></div>
- <footer><span>TOTAL</span><span id="tot"></span></footer>
- <div class="full hide fade" id="thanks"><img class="lg" src="logo-movietime.svg" alt=""><h1>¡Gracias por tu compra!</h1><p>Disfruta la función 🍿</p></div>
- <div class="full ads" id="ads"><div class="abg" id="abg"></div><img class="afg" id="afg" alt=""><div class="atx hide" id="atx"><h1 id="at"></h1><p id="as"></p></div></div>
+<title>Pantalla cliente · Movie Time</title><link rel="stylesheet" href="cliente.css"></head><body>
+<div class="stage">
+  <div class="top">
+    <span class="logo"><img src="logo-movietime.svg" alt="Movie Time"></span>
+    <div class="meta"><span class="chip"><i></i>Tu pedido</span><span class="clock" id="clock"></span></div>
+  </div>
+  <div class="main">
+    <section class="col"><div class="sec-title">Detalle</div><div class="list" id="list"></div></section>
+    <section class="col"><div class="sec-title">Tu selección</div><div class="show n1" id="show"></div></section>
+  </div>
+  <div class="bar"><div class="cnt" id="cnt"></div><div class="tt"><span>TOTAL</span><strong id="tot"></strong></div></div>
 </div>
+<div class="thanks hide" id="thanks">
+  <div class="check"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
+  <h1>¡Gracias por tu compra!</h1><p>Disfruta la función 🍿</p>
+  <span class="logo"><img src="logo-movietime.svg" alt=""></span>
+</div>
+<div class="ads hide" id="ads"><div class="prog" id="prog"></div></div>
 <script src="shared.js"></script>
 <script>
 const $=id=>document.getElementById(id);
-let lastSig='',slide=0,slideTimer=0;
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 document.addEventListener('dblclick',()=>document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen());
+const tick=()=>{$('clock').textContent=new Date().toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit',hour12:false})};tick();setInterval(tick,10000);
+
+/* ---------- Fotos de producto (con ilustración si no hay foto) ---------- */
+function photo(i){
+  const ph=document.createElement('div');ph.className='ph';
+  const im=new Image();im.alt='';im.src='productos/'+i.code+'.webp';
+  im.onerror=()=>{ph.innerHTML='<div class="nophoto"><img src="logo-movietime.svg" alt=""></div>'};ph.appendChild(im);return ph}
+
+/* ---------- Detalle + vitrina ---------- */
+let prevQty={},lastKey='',showEls={};
 function render(s){
-  $('list').innerHTML=!s.items.length?'<div class="empty">¡Bienvenido a Movie Time!</div>':s.items.map(i=>`<div class="line"><span class="q">${i.qty}x</span><span>${i.name}${i.desc?`<small>${i.desc}</small>`:""}</span><span class="p">${PC.money(i.price*i.qty)}</span></div>`).join('');
-  $('tot').textContent=PC.money(PC.total());
   $('thanks').classList.toggle('hide',s.status!=='gracias');
-  check();
+  const items=s.items;
+  // detalle
+  let changed=null;items.forEach(i=>{const k=i.code+'|'+i.price;if((prevQty[k]||0)!==i.qty)changed=k});
+  $('list').innerHTML=items.map(i=>{const k=i.code+'|'+i.price,isNew=k===changed;
+    return `<div class="line ${isNew?'new':'nan'}"><div class="qty">${i.qty}</div><div><div class="nm">${esc(i.name)}</div>${i.desc?`<div class="ds">${esc(i.desc)}</div>`:''}</div><div class="pr">${PC.money(i.price*i.qty)}${i.qty>1?`<small>${i.qty} × ${PC.money(i.price)}</small>`:''}</div></div>`}).join('');
+  const L=$('list');L.classList.remove('compact');if(L.scrollHeight>L.clientHeight+2)L.classList.add('compact');
+  L.scrollTop=L.scrollHeight;L.classList.toggle('scrolled',L.scrollTop>2);
+  prevQty={};items.forEach(i=>prevQty[i.code+'|'+i.price]=i.qty);
+  const n=items.reduce((a,i)=>a+i.qty,0);
+  $('cnt').innerHTML=`<b>${n}</b> ${n===1?'producto':'productos'}`;
+  const t=PC.money(PC.total());if($('tot').textContent!==t){$('tot').textContent=t;$('tot').classList.remove('bump');void $('tot').offsetWidth;$('tot').classList.add('bump')}
+  // vitrina: productos distintos, el último agregado primero
+  const seen=new Set(),uniq=[];for(const i of [...items].reverse()){if(!seen.has(i.code)){seen.add(i.code);uniq.push(i)}}
+  const shown=uniq.slice(0,6),extra=uniq.length-shown.length;
+  const key=shown.map(i=>i.code).join(',')+'|'+extra;
+  const qtyOf=c=>items.filter(i=>i.code===c).reduce((a,i)=>a+i.qty,0);
+  const show=$('show');
+  if(key!==lastKey){
+    const old=new Set(Object.keys(showEls));lastKey=key;showEls={};show.innerHTML='';
+    show.className='show n'+Math.max(1,shown.length);
+    shown.forEach(i=>{const t=document.createElement('div');t.className='tile'+(old.has(i.code)?' nan':'');
+      t.appendChild(photo(i));const cap=document.createElement('div');cap.className='cap';cap.innerHTML=`<span>${esc(i.name)}</span><b></b>`;t.appendChild(cap);
+      showEls[i.code]=cap.querySelector('b');show.appendChild(t)});
+    if(extra>0){const m=document.createElement('div');m.className='more';m.textContent='+'+extra+' más';show.appendChild(m)}
+  }
+  shown.forEach(i=>{const q=qtyOf(i.code);showEls[i.code].textContent='×'+q;showEls[i.code].classList.toggle('hide',q<2)});
+  checkAds();
 }
-function check(){
-  const s=PC.state,showAds=s.status==='idle';
-  $('ads').classList.toggle('hide',!showAds);
-  if(showAds&&!slideTimer){showSlide();slideTimer=setInterval(showSlide,s.slideSeconds*1000)}
-  if(!showAds&&slideTimer){clearInterval(slideTimer);slideTimer=0}
+
+/* ---------- Publicidad a pantalla completa ---------- */
+let slideTimer=0,cur=-1,adsSig='',nodes=[];
+function buildSlides(){
+  const s=PC.state,root=$('ads');[...root.querySelectorAll('.sl')].forEach(e=>e.remove());nodes=[];
+  const combos=s.catalog.filter(p=>/^combos salada/i.test(p.cat||'')&&!/hot dog/i.test(p.name)).slice(0,4);
+  if(combos.length){const d=document.createElement('div');d.className='sl combos';
+    d.innerHTML=`<span class="logo" style="align-self:flex-start;margin-bottom:2rem"><img src="logo-movietime.svg" alt=""></span><h2>Combos Movie Time</h2><h3>Pídelos en caja</h3><div class="cg"></div>`;
+    combos.forEach(p=>{const c=document.createElement('div');c.className='cc';c.appendChild(photo(p));
+      c.insertAdjacentHTML('beforeend',`<b>${esc(p.name)}</b><em>${esc(p.desc||'')}</em><div class="pp">${PC.money(p.price)}</div>`);d.querySelector('.cg').appendChild(c)});
+    root.insertBefore(d,$('prog'));nodes.push(d)}
+  s.slides.filter(x=>x.image).forEach(x=>{const d=document.createElement('div');d.className='sl';
+    d.innerHTML=`<img src="${esc(x.image)}" alt="">`;
+    if(x.title||x.sub)d.insertAdjacentHTML('beforeend',`<div style="position:absolute;left:0;right:0;bottom:8%;text-align:center;text-shadow:0 .2rem 1rem #000"><div style="font-size:5rem;font-weight:800">${esc(x.title||'')}</div><div style="font-size:2.4rem">${esc(x.sub||'')}</div></div>`);
+    root.insertBefore(d,$('prog'));nodes.push(d)});
 }
-function showSlide(){
-  const sl=PC.state.slides;if(!sl.length)return;const x=sl[slide++%sl.length];
-  if(x.image){$('afg').src=x.image;$('abg').style.backgroundImage=`url("${x.image}")`}
-  $('afg').classList.toggle('hide',!x.image);
-  $('at').textContent=x.title;$('as').textContent=x.sub;$('atx').classList.toggle('hide',!(x.title||x.sub));
-  $('ads').classList.remove('fade');void $('ads').offsetWidth;$('ads').classList.add('fade');
+function next(){
+  if(!nodes.length)return;const dur=PC.state.slideSeconds;
+  nodes.forEach(n=>n.classList.remove('on'));cur=(cur+1)%nodes.length;
+  const n=nodes[cur];void n.offsetWidth;n.classList.add('on');
+  const root=$('ads'),p=$('prog');root.style.setProperty('--dur',dur+'s');p.classList.remove('run');void p.offsetWidth;p.classList.add('run');
+}
+function checkAds(){
+  const s=PC.state,on=s.status==='idle',root=$('ads');
+  root.classList.toggle('hide',!on);
+  if(on){const sig=JSON.stringify([s.slides,s.catalog.length,s.slideSeconds]);
+    if(sig!==adsSig||!slideTimer){adsSig=sig;clearInterval(slideTimer);buildSlides();cur=-1;next();slideTimer=setInterval(next,s.slideSeconds*1000)}}
+  else if(slideTimer){clearInterval(slideTimer);slideTimer=0;adsSig=''}
 }
 PC.subscribe(render);
 </script></body></html>

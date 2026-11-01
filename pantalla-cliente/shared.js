@@ -1,7 +1,7 @@
 // Estado compartido entre el panel del colaborador y la pantalla del cliente.
 // Se sincroniza con BroadcastChannel + localStorage (misma PC, sin internet).
 const PC = (() => {
-  const KEY = 'pc_state_v3';
+  const KEY = 'pc_state_v4';
   const ch = 'BroadcastChannel' in window ? new BroadcastChannel('pc_channel') : null;
   const DEFAULT = {
     items: [],            // {code,name,price,qty}
@@ -260,62 +260,42 @@ const PC = (() => {
       {
         "title": "",
         "sub": "",
-        "image": "publicidad/MT-RECURSOS.jpg"
+        "image": "publicidad/avengers-doomsday.jpg"
       },
       {
         "title": "",
         "sub": "",
-        "image": "publicidad/avengers-doomsday-dob-r.jpg"
+        "image": "publicidad/duna-parte-3.jpg"
       },
       {
         "title": "",
         "sub": "",
-        "image": "publicidad/carmen-diferido-r.jpg"
+        "image": "publicidad/ekeko.jpg"
       },
       {
         "title": "",
         "sub": "",
-        "image": "publicidad/clayface-dob.jpg"
+        "image": "publicidad/el-pintor.jpg"
       },
       {
         "title": "",
         "sub": "",
-        "image": "publicidad/duna-parte-3-dob-r.jpg"
+        "image": "publicidad/godzilla.jpg"
       },
       {
         "title": "",
         "sub": "",
-        "image": "publicidad/ekeko-el-muneco-de-la-suerte.jpg"
+        "image": "publicidad/stray-kids.jpg"
       },
       {
         "title": "",
         "sub": "",
-        "image": "publicidad/el-heladero-dulce-sabor-a-muerte.jpg"
+        "image": "publicidad/street-fighter.jpg"
       },
       {
         "title": "",
         "sub": "",
-        "image": "publicidad/el-pintor-de-los-milagros.jpg"
-      },
-      {
-        "title": "",
-        "sub": "",
-        "image": "publicidad/godzilla-minus-zero-dob-r.jpg"
-      },
-      {
-        "title": "",
-        "sub": "",
-        "image": "publicidad/stray-kids-world-tour-run-it-live-viewing-r.jpg"
-      },
-      {
-        "title": "",
-        "sub": "",
-        "image": "publicidad/street-figther-dob.jpg"
-      },
-      {
-        "title": "",
-        "sub": "",
-        "image": "publicidad/wildwood-el-bosque-salvaje-funcion-matine.jpg"
+        "image": "publicidad/trabaja-con-nosotros.jpg"
       }
     ],
     slideSeconds: 8,
