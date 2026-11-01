@@ -15,7 +15,7 @@ CoordMode, Mouse, Window
 ; ============================================================
 
 ; ----- CONFIGURACION -----
-RutaWeb              := A_ScriptDir . "\..\pantalla-cliente"   ; carpeta con operador.html y cliente.html
+RutaWeb              := ""        ; carpeta con operador.html y cliente.html. Vacio = la busca sola (o te la pregunta una vez)
 TitulosTumi          := "TumiSoft|Nuevo comprobante"           ; texto que aparece en el titulo de la ventana de TumiSoft (separar con |)
 ProcesosTumi         := "tumi|grupostar"                       ; texto que aparece en el nombre del .exe de TumiSoft (separar con |)
 PantallaClienteX     := 1920     ; posicion X del segundo monitor (1920 = a la derecha de un monitor 1920x1080)
@@ -35,6 +35,30 @@ if (tamLog > 200000)
     FileDelete, %A_ScriptDir%\enlace.log
 IniRead, BuscadorX, %A_ScriptDir%\enlace.ini, buscador, x
 IniRead, BuscadorY, %A_ScriptDir%\enlace.ini, buscador, y
+
+; ----- Localizar la carpeta pantalla-cliente -----
+if (RutaWeb = "")
+    IniRead, RutaWeb, %A_ScriptDir%\enlace.ini, web, ruta
+if (RutaWeb = "ERROR" || !FileExist(RutaWeb . "\operador.html"))
+    RutaWeb := BuscarCarpetaWeb()
+intentos := 0
+while (RutaWeb = "" && intentos < 3)
+{
+    intentos++
+    MsgBox, 64, Movie Time, No encuentro la carpeta pantalla-cliente (la que contiene operador.html).`n`nEn la siguiente ventana selecciona esa carpeta.
+    FileSelectFolder, elegida, , 0, Selecciona la carpeta pantalla-cliente
+    if (elegida = "")
+        break
+    elegida := RTrim(elegida, "\")
+    if FileExist(elegida . "\operador.html")
+        RutaWeb := elegida
+    else if FileExist(elegida . "\pantalla-cliente\operador.html")
+        RutaWeb := elegida . "\pantalla-cliente"
+    else
+        MsgBox, 48, Movie Time, Esa carpeta no contiene operador.html.
+}
+if (RutaWeb != "")
+    IniWrite, %RutaWeb%, %A_ScriptDir%\enlace.ini, web, ruta
 Log("=== Enlace iniciado ===  web: " . RutaWeb)
 
 ; ----- Menu de la bandeja -----
@@ -50,8 +74,11 @@ Menu, Tray, Add, Ver registro (enlace.log), VerRegistro
 if (PanelSiempreAlFrente)
     Menu, Tray, Check, Panel siempre al frente
 
-if !FileExist(RutaWeb . "\operador.html")
-    MsgBox, 48, Movie Time, No encuentro operador.html en:`n%RutaWeb%`n`nColoca la carpeta pantalla-cliente junto a esta carpeta o corrige RutaWeb al inicio del script.
+if (RutaWeb = "")
+{
+    Log("ERROR: no se encontro la carpeta pantalla-cliente")
+    AbrirAlIniciar := false
+}
 
 SetTimer, Revisar, 80
 if (AbrirAlIniciar)
@@ -115,7 +142,7 @@ return
 
 ; ----- ABRIR VENTANAS -----
 AbrirPanel:
-url := "file:///" . StrReplace(RutaWeb, "\", "/") . "/operador.html"
+url := UrlArchivo(RutaWeb . "\operador.html")
 AbrirApp(url, "--window-size=" . PanelAncho . "," . PanelAlto . " --window-position=20,20")
 if (PanelSiempreAlFrente)
 {
@@ -125,7 +152,7 @@ if (PanelSiempreAlFrente)
 return
 
 AbrirCliente:
-url := "file:///" . StrReplace(RutaWeb, "\", "/") . "/cliente.html"
+url := UrlArchivo(RutaWeb . "\cliente.html")
 AbrirApp(url, "--window-position=" . PantallaClienteX . ",0 --start-fullscreen")
 return
 
@@ -277,6 +304,39 @@ BuscarTumiSoft()
         }
     }
     return 0
+}
+
+; Busca pantalla-cliente en lugares comunes (junto al script, Descargas, Escritorio, Documentos)
+BuscarCarpetaWeb()
+{
+    EnvGet, perfil, USERPROFILE
+    bases := [A_ScriptDir, A_ScriptDir . "\..", A_ScriptDir . "\..\..", perfil . "\Downloads", perfil . "\Desktop", perfil . "\Documents"]
+    subs := ["\pantalla-cliente", "\pantalla-cliente\pantalla-cliente", "\MovieTime\pantalla-cliente"]
+    for i, b in bases
+    {
+        for j, sb in subs
+        {
+            ruta := RutaCompleta(b . sb)
+            if FileExist(ruta . "\operador.html")
+                return ruta
+        }
+    }
+    return ""
+}
+
+; Quita los ".." de una ruta
+RutaCompleta(ruta)
+{
+    VarSetCapacity(buf, 1040, 0)
+    DllCall("GetFullPathName", "Str", ruta, "UInt", 520, "Str", buf, "Ptr", 0)
+    return buf
+}
+
+UrlArchivo(ruta)
+{
+    u := StrReplace(RutaCompleta(ruta), "\", "/")
+    u := StrReplace(u, " ", "%20")
+    return "file:///" . u
 }
 
 AbrirApp(url, extra)

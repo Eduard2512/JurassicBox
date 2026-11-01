@@ -1,12 +1,17 @@
 ﻿ENLACE MOVIE TIME -> TUMISOFT
 
 Este archivo (MovieTime-Enlace.ahk) es solo texto, no lleva imagenes.
-Necesita AutoHotkey v1 instalado y la carpeta "pantalla-cliente" al lado de esta carpeta:
+Necesita AutoHotkey v1 instalado y la carpeta "pantalla-cliente" (paneles web, fotos y publicidad).
 
-   MovieTime\
-      enlace-movietime\   (esta carpeta)
-      pantalla-cliente\  (paneles web, fotos y publicidad)
+COMO INSTALAR
+- Lo mas facil: descomprimir MovieTime.zip, que ya trae las dos carpetas juntas:
+      MovieTime\
+         enlace-movietime\   (esta carpeta)
+         pantalla-cliente\
+- Si estan en otro lugar, el script busca pantalla-cliente solo (junto a esta carpeta, Descargas, Escritorio, Documentos).
+  Si no la encuentra, te pide que la selecciones una vez y se acuerda (se guarda en enlace.ini).
 
+USO
 1. Doble clic en MovieTime-Enlace.ahk. Aparece un icono en la bandeja (junto al reloj).
 2. Se abren el panel del colaborador y la pantalla del cliente.
 3. Con TumiSoft abierto, agrega un producto en el panel: el codigo se escribe en TumiSoft + Enter.
