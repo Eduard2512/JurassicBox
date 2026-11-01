@@ -24,7 +24,9 @@ AbrirAlIniciar       := true     ; abre el panel y la pantalla del cliente al in
 PanelSiempreAlFrente := true     ; mantiene el panel del colaborador visible sobre TumiSoft
 PanelNoActivar       := true     ; el panel NO le quita el foco a TumiSoft al hacer clic (como el panel antiguo de AutoHotkey)
 SiempreClicBuscador  := false    ; true = hace clic en el buscador (si esta calibrado) aunque TumiSoft ya este activa
-PausaEntreProductos  := 350      ; milisegundos entre un producto y otro cuando se envia una lista completa
+PausaEntreProductos  := 1200     ; milisegundos de espera DESPUES de cada producto cuando se envia una lista completa (tambien se cambia desde el menu de la bandeja)
+PausaAntesEnter      := 150      ; milisegundos entre terminar de escribir el codigo y presionar Enter (da tiempo a que TumiSoft encuentre el producto)
+LimpiarCampoEntre    := true     ; en una lista, borra el buscador antes de escribir el siguiente codigo (evita que se peguen dos codigos)
 PanelAncho           := 1000     ; tamano de la ventana del panel del colaborador
 PanelAlto            := 720
 
@@ -39,6 +41,9 @@ if (tamLog > 200000)
     FileDelete, %A_ScriptDir%\enlace.log
 IniRead, BuscadorX, %A_ScriptDir%\enlace.ini, buscador, x
 IniRead, BuscadorY, %A_ScriptDir%\enlace.ini, buscador, y
+IniRead, pausaIni, %A_ScriptDir%\enlace.ini, envio, pausa
+if pausaIni is integer
+    PausaEntreProductos := pausaIni
 
 ; ----- Localizar la carpeta pantalla-cliente -----
 if (RutaWeb = "")
@@ -73,6 +78,17 @@ Menu, Tray, Add, Abrir pantalla del cliente, AbrirCliente
 Menu, Tray, Add, Panel siempre al frente, AlternarFrente
 Menu, Tray, Add, Panel sin robar el foco a TumiSoft, AlternarFoco
 Menu, Tray, Add
+Menu, Velocidad, Add, Rapida (0.7 segundos entre productos), CambiarVel
+Menu, Velocidad, Add, Normal (1.2 segundos), CambiarVel
+Menu, Velocidad, Add, Lenta (2 segundos), CambiarVel
+Menu, Velocidad, Add, Muy lenta (3 segundos), CambiarVel
+Velocidades := [700, 1200, 2000, 3000]
+for i, v in Velocidades
+{
+    if (v = PausaEntreProductos)
+        Menu, Velocidad, Check, %i%&
+}
+Menu, Tray, Add, Velocidad al enviar una lista completa, :Velocidad
 Menu, Tray, Add, Calibrar buscador de TumiSoft (5 segundos), CalibrarBuscador
 Menu, Tray, Add, Probar 1: escribir 0031 en la ventana activa, ProbarEnvio
 Menu, Tray, Add, Probar 2: envio automatico completo, ProbarAuto
@@ -179,6 +195,16 @@ Menu, Tray, ToggleCheck, Panel siempre al frente
 if (!PanelSiempreAlFrente)
     WinSet, AlwaysOnTop, Off, Panel colaborador ahk_class Chrome_WidgetWin_1
 PanelAplicado := 0
+return
+
+CambiarVel:
+PausaEntreProductos := Velocidades[A_ThisMenuItemPos]
+for i, v in Velocidades
+    Menu, Velocidad, Uncheck, %i%&
+Menu, Velocidad, Check, %A_ThisMenuItemPos%&
+IniWrite, %PausaEntreProductos%, %A_ScriptDir%\enlace.ini, envio, pausa
+Log("Velocidad de envio: " . PausaEntreProductos . " ms entre productos")
+Aviso("Pausa entre productos: " . PausaEntreProductos . " ms", 2500)
 return
 
 AlternarFoco:
@@ -314,7 +340,7 @@ EnviarATumi(codigo)
 ; Activa TumiSoft y hace el clic en el buscador UNA sola vez, al inicio del lote.
 EnviarLote(codigos)
 {
-    global BuscadorX, BuscadorY, SiempreClicBuscador, PausaEntreProductos
+    global BuscadorX, BuscadorY, SiempreClicBuscador, PausaEntreProductos, PausaAntesEnter, LimpiarCampoEntre
     total := codigos.Length()
     id := BuscarTumiSoft()
     if (!id)
@@ -374,7 +400,15 @@ EnviarLote(codigos)
             msg := "Enviando a TumiSoft: " . i . " de " . total . "  (no muevas el mouse ni el teclado)"
             ToolTip, %msg%
         }
-        SendEvent, %codigo%{Enter}
+        if (i > 1 && LimpiarCampoEntre)
+        {
+            ; selecciona lo que haya en el buscador para que el nuevo codigo lo reemplace (nunca se pegan dos codigos)
+            SendEvent, ^a
+            Sleep, 60
+        }
+        SendEvent, %codigo%
+        Sleep, %PausaAntesEnter%
+        SendEvent, {Enter}
         enviados++
         Log("Enviado a TumiSoft: " . codigo . "  (" . i . "/" . total . ", ventana: " . t . ", ya activa: " . (yaActiva ? "si" : "no") . ", clic en buscador: " . (clic ? "si" : "no") . ")")
         if (i < total)

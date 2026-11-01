@@ -14,7 +14,10 @@ MODOS DE ENVIO (en el panel del colaborador, "Enviar a TumiSoft")
   (si un producto lleva cantidad 2, se escribe 2 veces). No mover el mouse ni el teclado mientras envia.
   El boton solo envia lo que falta, asi no se duplican productos si agregas mas despues.
 - No enviar: solo se actualiza la pantalla del cliente.
-La velocidad entre productos se cambia con PausaEntreProductos (al inicio del .ahk).
+VELOCIDAD AL ENVIAR UNA LISTA: clic derecho en el icono de la bandeja > "Velocidad al enviar una lista completa"
+(Rapida 0.7 s / Normal 1.2 s / Lenta 2 s / Muy lenta 3 s entre productos). Si TumiSoft se atrasa, subir a Lenta.
+Ademas, antes de cada codigo el script limpia el buscador, para que nunca se peguen dos codigos juntos.
+Los tiempos finos (PausaAntesEnter, LimpiarCampoEntre) estan al inicio del .ahk.
 
 USO
 1. Abrir TumiSoft. Doble clic en MovieTime-Enlace.ahk (icono nuevo junto al reloj).
