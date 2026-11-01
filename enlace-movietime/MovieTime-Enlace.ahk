@@ -22,12 +22,15 @@ PantallaClienteX     := 1920     ; posicion X del segundo monitor (1920 = a la d
 Navegador            := "chrome.exe"
 AbrirAlIniciar       := true     ; abre el panel y la pantalla del cliente al iniciar este script
 PanelSiempreAlFrente := true     ; mantiene el panel del colaborador visible sobre TumiSoft
+PanelNoActivar       := true     ; el panel NO le quita el foco a TumiSoft al hacer clic (como el panel antiguo de AutoHotkey)
+SiempreClicBuscador  := false    ; true = hace clic en el buscador (si esta calibrado) aunque TumiSoft ya este activa
 PanelAncho           := 1000     ; tamano de la ventana del panel del colaborador
 PanelAlto            := 720
 
 UltimoSeq    := 0
 Inicializado := false
 PanelVisto   := false
+PanelAplicado := 0
 
 ; ----- Registro y coordenadas guardadas -----
 FileGetSize, tamLog, %A_ScriptDir%\enlace.log
@@ -67,12 +70,17 @@ Menu, Tray, Add
 Menu, Tray, Add, Abrir panel del colaborador, AbrirPanel
 Menu, Tray, Add, Abrir pantalla del cliente, AbrirCliente
 Menu, Tray, Add, Panel siempre al frente, AlternarFrente
+Menu, Tray, Add, Panel sin robar el foco a TumiSoft, AlternarFoco
 Menu, Tray, Add
-Menu, Tray, Add, Probar envio a TumiSoft (codigo 0031), ProbarEnvio
+Menu, Tray, Add, Calibrar buscador de TumiSoft (5 segundos), CalibrarBuscador
+Menu, Tray, Add, Probar 1: escribir 0031 en la ventana activa, ProbarEnvio
+Menu, Tray, Add, Probar 2: envio automatico completo, ProbarAuto
 Menu, Tray, Add, Mostrar ventanas detectadas, VerVentanas
 Menu, Tray, Add, Ver registro (enlace.log), VerRegistro
 if (PanelSiempreAlFrente)
     Menu, Tray, Check, Panel siempre al frente
+if (PanelNoActivar)
+    Menu, Tray, Check, Panel sin robar el foco a TumiSoft
 
 if (RutaWeb = "")
 {
@@ -90,6 +98,16 @@ return
 
 ; ----- LEE LOS COMANDOS QUE PUBLICA EL PANEL WEB -----
 Revisar:
+panel := WinExist("Panel colaborador ahk_class Chrome_WidgetWin_1")
+if (panel && panel != PanelAplicado)
+{
+    if (PanelNoActivar)
+        WinSet, ExStyle, +0x08000000, ahk_id %panel%
+    if (PanelSiempreAlFrente)
+        WinSet, AlwaysOnTop, On, ahk_id %panel%
+    PanelAplicado := panel
+    Log("Panel configurado (sin robar foco: " . PanelNoActivar . ", al frente: " . PanelSiempreAlFrente . ")")
+}
 hwnd := WinExist("MTCMD|")
 if (!hwnd)
 {
@@ -136,19 +154,12 @@ Loop, Parse, resto, `;
         EnviarATumi(codigo)
     }
 }
-if (PanelSiempreAlFrente)
-    WinSet, AlwaysOnTop, On, ahk_id %hwnd%
 return
 
 ; ----- ABRIR VENTANAS -----
 AbrirPanel:
 url := UrlArchivo(RutaWeb . "\operador.html")
 AbrirApp(url, "--window-size=" . PanelAncho . "," . PanelAlto . " --window-position=20,20")
-if (PanelSiempreAlFrente)
-{
-    WinWait, Panel colaborador,, 10
-    WinSet, AlwaysOnTop, On, Panel colaborador
-}
 return
 
 AbrirCliente:
@@ -160,13 +171,53 @@ AlternarFrente:
 PanelSiempreAlFrente := !PanelSiempreAlFrente
 Menu, Tray, ToggleCheck, Panel siempre al frente
 if (!PanelSiempreAlFrente)
-    WinSet, AlwaysOnTop, Off, Panel colaborador
+    WinSet, AlwaysOnTop, Off, Panel colaborador ahk_class Chrome_WidgetWin_1
+PanelAplicado := 0
+return
+
+AlternarFoco:
+PanelNoActivar := !PanelNoActivar
+Menu, Tray, ToggleCheck, Panel sin robar el foco a TumiSoft
+if (!PanelNoActivar)
+    WinSet, ExStyle, -0x08000000, Panel colaborador ahk_class Chrome_WidgetWin_1
+PanelAplicado := 0
+Log("Panel sin robar foco: " . PanelNoActivar)
 return
 
 ; ----- DIAGNOSTICO -----
+; PRUEBA 1: tu haces clic en el buscador de TumiSoft y a los 5 segundos se escribe 0031 en la ventana que este activa.
+; Sirve para saber si escribir funciona, sin depender del foco ni de la calibracion.
 ProbarEnvio:
-Log("Prueba manual desde la bandeja (codigo 0031)")
+Aviso("PRUEBA 1: haz clic en el buscador de TumiSoft. En 5 segundos se escribe 0031 ahi.", 5500)
+Sleep, 5000
+ToolTip
+WinGetTitle, tact, A
+WinGet, eact, ProcessName, A
+Log("Prueba 1 - ventana activa: " . eact . " | " . tact)
+SetKeyDelay, 40
+SendEvent, 0031{Enter}
+Log("Prueba 1 - enviado 0031 a la ventana activa")
+return
+
+; PRUEBA 2: el script hace todo solo (activa TumiSoft, hace clic si esta calibrado y escribe).
+ProbarAuto:
+Aviso("PRUEBA 2: en 3 segundos el script escribe 0031 en TumiSoft.", 3500)
+Sleep, 3000
+Log("Prueba 2 - envio automatico (codigo 0031)")
 EnviarATumi("0031")
+return
+
+; Calibrar: pon el mouse sobre el cuadro "Buscar productos" de TumiSoft (o presiona F8 con el mouse ahi).
+CalibrarBuscador:
+Loop, 5
+{
+    n := 6 - A_Index
+    msg := "Pon el mouse sobre el cuadro Buscar productos de TumiSoft. Guardando en " . n
+    ToolTip, %msg%
+    Sleep, 1000
+}
+ToolTip
+Gosub, GuardarCalibracion
 return
 
 VerRegistro:
@@ -215,6 +266,10 @@ return
 ; ----- F8: calibrar. Pon el mouse sobre el cuadro "Buscar productos" de TumiSoft y presiona F8.
 ;       Desde entonces se hace clic ahi antes de escribir cada codigo. -----
 F8::
+Gosub, GuardarCalibracion
+return
+
+GuardarCalibracion:
 CoordMode, Mouse, Screen
 MouseGetPos, sx, sy, wid
 WinGetPos, wx, wy,,, ahk_id %wid%
@@ -246,7 +301,7 @@ return
 ; Escribe el codigo en TumiSoft + Enter (igual que el panel anterior, con mas esperas y avisos)
 EnviarATumi(codigo)
 {
-    global BuscadorX, BuscadorY
+    global BuscadorX, BuscadorY, SiempreClicBuscador
     id := BuscarTumiSoft()
     if (!id)
     {
@@ -255,25 +310,36 @@ EnviarATumi(codigo)
         return
     }
     WinGetTitle, t, ahk_id %id%
-    WinActivate, ahk_id %id%
-    WinWaitActive, ahk_id %id%,, 2
-    if (ErrorLevel)
-        Log("AVISO: TumiSoft no quedo activa en 2 s (titulo: " . t . ")")
-    Sleep, 150
-    if (BuscadorX != "ERROR" && BuscadorX != "")
+    yaActiva := WinActive("ahk_id " . id)
+    calibrado := (BuscadorX != "ERROR" && BuscadorX != "")
+    clic := false
+    if (!yaActiva)
+    {
+        WinActivate, ahk_id %id%
+        WinWaitActive, ahk_id %id%,, 2
+        if (ErrorLevel)
+            Log("AVISO: TumiSoft no quedo activa en 2 s (titulo: " . t . ")")
+        Sleep, 200
+        clic := calibrado
+    }
+    else if (calibrado && SiempreClicBuscador)
+        clic := true
+    if (clic)
     {
         CoordMode, Mouse, Screen
         MouseGetPos, ox, oy
         CoordMode, Mouse, Window
         Click, %BuscadorX%, %BuscadorY%
-        Sleep, 100
+        Sleep, 200
         CoordMode, Mouse, Screen
         MouseMove, %ox%, %oy%, 0
         CoordMode, Mouse, Window
+        Send, ^a
+        Sleep, 50
     }
     SetKeyDelay, 40
     SendEvent, %codigo%{Enter}
-    Log("Enviado a TumiSoft: " . codigo . "  (ventana: " . t . ")")
+    Log("Enviado a TumiSoft: " . codigo . "  (ventana: " . t . " | ya activa: " . (yaActiva ? "si" : "no") . " | clic en buscador: " . (clic ? "si" : "no") . ")")
 }
 
 ; Busca la ventana de TumiSoft por nombre del .exe o por el titulo

@@ -3,25 +3,30 @@
 Este archivo (MovieTime-Enlace.ahk) es solo texto, no lleva imagenes.
 Necesita AutoHotkey v1 instalado y la carpeta "pantalla-cliente" (paneles web, fotos y publicidad).
 
-COMO INSTALAR
-- Lo mas facil: descomprimir MovieTime.zip, que ya trae las dos carpetas juntas:
-      MovieTime\
-         enlace-movietime\   (esta carpeta)
-         pantalla-cliente\
-- Si estan en otro lugar, el script busca pantalla-cliente solo (junto a esta carpeta, Descargas, Escritorio, Documentos).
-  Si no la encuentra, te pide que la selecciones una vez y se acuerda (se guarda en enlace.ini).
+INSTALAR
+- Descomprimir MovieTime.zip: trae las dos carpetas juntas (enlace-movietime y pantalla-cliente).
+- Si estan en otro lugar, el script busca pantalla-cliente solo; si no la encuentra te pide seleccionarla una vez.
 
 USO
-1. Doble clic en MovieTime-Enlace.ahk. Aparece un icono en la bandeja (junto al reloj).
+1. Abrir TumiSoft. Doble clic en MovieTime-Enlace.ahk (icono nuevo junto al reloj).
 2. Se abren el panel del colaborador y la pantalla del cliente.
-3. Con TumiSoft abierto, agrega un producto en el panel: el codigo se escribe en TumiSoft + Enter.
+3. Agregar un producto en el panel: el codigo se escribe en el buscador de TumiSoft + Enter.
 
-SI NO ESCRIBE EN TUMISOFT
-- Clic derecho en el icono de la bandeja > "Mostrar ventanas detectadas": dice si encontro TumiSoft.
-  Si no, copia el titulo o el nombre del .exe de TumiSoft en TitulosTumi / ProcesosTumi (inicio del .ahk).
-- Clic derecho > "Probar envio a TumiSoft": escribe 0031 en TumiSoft.
-- Si escribe pero no cae en el buscador: pon el mouse sobre el cuadro "Buscar productos" de TumiSoft y presiona F8.
-  Desde entonces hace clic ahi antes de escribir cada codigo (F9 borra esa calibracion).
-- Clic derecho > "Ver registro": enlace.log dice que paso en cada envio. Mandame ese archivo si sigue fallando.
+IMPORTANTE - EL FOCO
+El panel NO le quita el foco a TumiSoft (igual que tu panel antiguo de AutoHotkey), asi el cursor queda en el buscador.
+Por eso, dentro del panel no se puede escribir con el teclado; usa los botones de producto.
+(Si quieres escribir en el panel: clic derecho en el icono de la bandeja > quitar la marca "Panel sin robar el foco".)
 
-Teclas: F1 limpia el buscador de TumiSoft | F8 calibrar buscador | F9 borrar calibracion
+SI NO ESCRIBE EN TUMISOFT - HACER ESTAS PRUEBAS EN ORDEN
+(clic derecho en el icono del script, junto al reloj)
+A) "Mostrar ventanas detectadas": dice si encontro TumiSoft. Si no, copia su titulo o el nombre del .exe
+   en TitulosTumi / ProcesosTumi (inicio del .ahk).
+B) "Probar 1": haces clic TU en el buscador de TumiSoft y a los 5 segundos se escribe 0031.
+   - Si se escribe: escribir funciona, el problema era el foco -> pasa a C.
+   - Si NO se escribe: avisame (puede ser un permiso de Windows).
+C) "Calibrar buscador (5 segundos)": clic en la opcion y pon el mouse sobre el cuadro "Buscar productos" de TumiSoft
+   hasta que pase la cuenta. Desde entonces el script hace clic ahi antes de escribir cada codigo.
+D) "Probar 2": el script hace todo solo (activa TumiSoft, clic, escribe 0031).
+E) "Ver registro": enlace.log dice que paso en cada envio. Mandame ese archivo si sigue fallando.
+
+Teclas: F1 limpia el buscador de TumiSoft | F8 calibrar buscador (mouse sobre el cuadro) | F9 borrar calibracion
