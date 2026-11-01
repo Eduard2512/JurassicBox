@@ -1,7 +1,7 @@
 // Estado compartido entre el panel del colaborador y la pantalla del cliente.
 // Se sincroniza con BroadcastChannel + localStorage (misma PC, sin internet).
 const PC = (() => {
-  const KEY = 'pc_state_v4';
+  const KEY = 'pc_state_v5';
   const ch = 'BroadcastChannel' in window ? new BroadcastChannel('pc_channel') : null;
   const DEFAULT = {
     items: [],            // {code,name,price,qty}
@@ -67,55 +67,64 @@ const PC = (() => {
         "code": "2611",
         "name": "Combo Dulce 1",
         "price": 26.0,
-        "cat": "Combos Dulce"
+        "cat": "Combos Dulce",
+        "desc": "1 Pop corn dulce mediana + 1 gaseosa mediana + 1 cañonazo"
       },
       {
         "code": "2612",
         "name": "Combo Dulce 2",
         "price": 31.5,
-        "cat": "Combos Dulce"
+        "cat": "Combos Dulce",
+        "desc": "2 Pop corn dulces chicas + 2 gaseosas chicas"
       },
       {
         "code": "2613",
         "name": "Mixto 3",
         "price": 36.5,
-        "cat": "Combos Dulce"
+        "cat": "Combos Dulce",
+        "desc": "1 Pop corn mixta gigante + 2 gaseosas medianas"
       },
       {
         "code": "2614",
         "name": "Mixto 4",
         "price": 40.0,
-        "cat": "Combos Dulce"
+        "cat": "Combos Dulce",
+        "desc": "1 Pop corn mixta gigante + 2 gaseosas grandes"
       },
       {
         "code": "3135",
         "name": "Power Salad",
         "price": 35.5,
-        "cat": "Combos Bar"
+        "cat": "Combos Bar",
+        "desc": "1 Pop corn salada grande + 1 pizza + 2 gaseosas chicas"
       },
       {
         "code": "3133",
         "name": "Power Dulce",
         "price": 35.5,
-        "cat": "Combos Bar"
+        "cat": "Combos Bar",
+        "desc": "1 Pop corn dulce grande + 1 pizza + 2 gaseosas chicas"
       },
       {
         "code": "3615",
         "name": "VIP Individual",
         "price": 26.5,
-        "cat": "Combos Vip"
+        "cat": "Combos Vip",
+        "desc": "1 Tinto de verano + 1 pizza personal"
       },
       {
         "code": "3616",
         "name": "VIP Dúo",
         "price": 39.9,
-        "cat": "Combos Vip"
+        "cat": "Combos Vip",
+        "desc": "2 Tintos de verano + 1 pizza + 1 pop corn salada grande"
       },
       {
         "code": "3617",
         "name": "VIP Trío",
         "price": 54.9,
-        "cat": "Combos Vip"
+        "cat": "Combos Vip",
+        "desc": "3 Tintos de verano + 1 pizza + 2 pop corn saladas grandes"
       },
       {
         "code": "0031",
@@ -303,6 +312,7 @@ const PC = (() => {
   };
   let state = load();
   const subs = [];
+  let lastRev = null;
 
   function load() {
     try { return Object.assign({}, DEFAULT, JSON.parse(localStorage.getItem(KEY) || '{}')); }
@@ -348,6 +358,28 @@ const PC = (() => {
     remove(idx) { this.update(s => { s.items.splice(idx, 1); s.status = s.items.length ? 'venta' : 'idle'; }); },
     finish() { this.update(s => { s.status = 'gracias'; }); },
     clear() { this.update(s => { s.items = []; s.status = 'idle'; }); },
+    // Puente con AutoHotkey: el .ahk escribe estado.js y la pantalla del cliente lo lee cada ~0.7 s
+    applyBridge(b) {
+      if (!b || b.rev === lastRev) return;
+      lastRev = b.rev;
+      if (b.catalog && b.catalog.length) state.catalog = b.catalog.map(c => ({ ...c, price: +c.price }));
+      state.items = (b.items || []).map(it => {
+        const p = state.catalog.find(c => c.code === it.code) || { name: it.code, price: 0 };
+        return { code: it.code, name: p.name, price: p.price, cat: p.cat, desc: p.desc, qty: +it.qty };
+      });
+      state.status = b.status || 'idle';
+      notify();
+    },
+    watchBridge(ms = 700) {
+      const poll = () => {
+        const s = document.createElement('script');
+        s.src = 'estado.js?t=' + Date.now();
+        s.onload = () => { s.remove(); if (window.PC_BRIDGE) this.applyBridge(window.PC_BRIDGE); };
+        s.onerror = () => s.remove();
+        document.head.appendChild(s);
+      };
+      poll(); setInterval(poll, ms);
+    },
     reset() { localStorage.removeItem(KEY); refresh(); }
   };
 })();

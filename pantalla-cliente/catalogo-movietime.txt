@@ -6,15 +6,15 @@
 2485;Combo 3 + Hot Dog;42.40;Combos Salada;1 Pop corn salada gigante + 2 gaseosas medianas + 1 hot dog
 2488;Combo 4;37.50;Combos Salada;1 Pop corn salada gigante + 2 gaseosas grandes
 2489;Combo 4 + Hot Dog;46.40;Combos Salada;1 Pop corn salada gigante + 2 gaseosas grandes + 1 hot dog
-2611;Combo Dulce 1;26.00;Combos Dulce;
-2612;Combo Dulce 2;31.50;Combos Dulce;
-2613;Mixto 3;36.50;Combos Dulce;
-2614;Mixto 4;40.00;Combos Dulce;
-3135;Power Salad;35.50;Combos Bar;
-3133;Power Dulce;35.50;Combos Bar;
-3615;VIP Individual;26.50;Combos Vip;
-3616;VIP Dúo;39.90;Combos Vip;
-3617;VIP Trío;54.90;Combos Vip;
+2611;Combo Dulce 1;26.00;Combos Dulce;1 Pop corn dulce mediana + 1 gaseosa mediana + 1 cañonazo
+2612;Combo Dulce 2;31.50;Combos Dulce;2 Pop corn dulces chicas + 2 gaseosas chicas
+2613;Mixto 3;36.50;Combos Dulce;1 Pop corn mixta gigante + 2 gaseosas medianas
+2614;Mixto 4;40.00;Combos Dulce;1 Pop corn mixta gigante + 2 gaseosas grandes
+3135;Power Salad;35.50;Combos Bar;1 Pop corn salada grande + 1 pizza + 2 gaseosas chicas
+3133;Power Dulce;35.50;Combos Bar;1 Pop corn dulce grande + 1 pizza + 2 gaseosas chicas
+3615;VIP Individual;26.50;Combos Vip;1 Tinto de verano + 1 pizza personal
+3616;VIP Dúo;39.90;Combos Vip;2 Tintos de verano + 1 pizza + 1 pop corn salada grande
+3617;VIP Trío;54.90;Combos Vip;3 Tintos de verano + 1 pizza + 2 pop corn saladas grandes
 0031;Pop Corn Salada Chico;14.00;Salada;
 0032;Pop Corn Salada Mediano;15.00;Salada;
 0033;Pop Corn Salada Grande;17.00;Salada;
