@@ -1,0 +1,51 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Panel colaborador</title><link rel="stylesheet" href="style.css"></head><body>
+<div class="op">
+ <section class="panel">
+  <h2>Agregar producto</h2>
+  <div class="row"><input id="code" placeholder="Código o escáner + Enter" autofocus><button id="addBtn">Agregar</button></div>
+  <div class="msg" id="msg"></div>
+  <div class="grid" id="grid"></div>
+  <details><summary>Configuración (catálogo y publicidad)</summary>
+   <p style="color:var(--mut);margin:8px 0">Catálogo: <code>código;nombre;precio</code> por línea</p>
+   <textarea id="cat"></textarea>
+   <p style="color:var(--mut);margin:8px 0">Publicidad/cartelera: <code>título;subtítulo;url imagen (opcional)</code></p>
+   <textarea id="sl"></textarea>
+   <div class="row" style="margin-top:8px"><label>Seg. inactivo <input id="idle" type="number" style="width:80px"></label><label>Seg. por slide <input id="ss" type="number" style="width:80px"></label></div>
+   <button id="saveCfg">Guardar</button> <button class="sec" id="openCl">Abrir pantalla del cliente</button>
+  </details>
+ </section>
+ <section class="panel">
+  <h2>Venta actual</h2>
+  <table><thead><tr><th>Producto</th><th>Cant.</th><th>Subtotal</th><th></th></tr></thead><tbody id="body"></tbody></table>
+  <div class="tot" id="tot"></div>
+  <div class="row"><button class="ok" id="fin">Finalizar venta</button><button class="bad" id="clr">Cancelar</button></div>
+ </section>
+</div>
+<script src="shared.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+function render(s){
+  $('grid').innerHTML=s.catalog.map(p=>`<button class="prod" data-c="${p.code}">${p.name}<small>${p.code}</small><b>${PC.money(p.price)}</b></button>`).join('');
+  $('body').innerHTML=s.items.map((i,n)=>`<tr><td>${i.name}</td><td><button class="sec" data-m="${n}">−</button> ${i.qty} <button class="sec" data-p="${n}">+</button></td><td>${PC.money(i.price*i.qty)}</td><td><button class="bad" data-x="${n}">✕</button></td></tr>`).join('');
+  $('tot').textContent='Total: '+PC.money(PC.total());
+}
+PC.subscribe(render);
+$('grid').onclick=e=>{const b=e.target.closest('[data-c]');if(b){PC.addByCode(b.dataset.c);$('code').focus()}};
+$('body').onclick=e=>{const t=e.target;
+  if(t.dataset.m)PC.setQty(+t.dataset.m,-1);if(t.dataset.p)PC.setQty(+t.dataset.p,1);if(t.dataset.x)PC.remove(+t.dataset.x)};
+function addCode(){const v=$('code').value;if(!v)return;$('msg').textContent=PC.addByCode(v)?'':'Código no encontrado: '+v;$('code').value='';$('code').focus()}
+$('addBtn').onclick=addCode;$('code').onkeydown=e=>{if(e.key==='Enter')addCode()};
+$('fin').onclick=()=>{if(PC.state.items.length){PC.finish();setTimeout(()=>PC.clear(),6000)}};
+$('clr').onclick=()=>PC.clear();
+$('openCl').onclick=()=>window.open('cliente.html','pantalla_cliente','width=1280,height=720');
+const s0=PC.state;
+$('cat').value=s0.catalog.map(p=>[p.code,p.name,p.price].join(';')).join('\n');
+$('sl').value=s0.slides.map(x=>[x.title,x.sub,x.image].join(';')).join('\n');
+$('idle').value=s0.idleSeconds;$('ss').value=s0.slideSeconds;
+$('saveCfg').onclick=()=>PC.update(s=>{
+  s.catalog=$('cat').value.split('\n').map(l=>l.split(';')).filter(a=>a[0]&&a[1]).map(a=>({code:a[0].trim(),name:a[1].trim(),price:parseFloat(a[2])||0}));
+  s.slides=$('sl').value.split('\n').map(l=>l.split(';')).filter(a=>a[0]).map(a=>({title:a[0].trim(),sub:(a[1]||'').trim(),image:(a[2]||'').trim()}));
+  s.idleSeconds=+$('idle').value||20;s.slideSeconds=+$('ss').value||7;
+});
+</script></body></html>
