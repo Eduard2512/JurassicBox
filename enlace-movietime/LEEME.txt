@@ -1,0 +1,22 @@
+﻿ENLACE MOVIE TIME -> TUMISOFT
+
+Este archivo (MovieTime-Enlace.ahk) es solo texto, no lleva imagenes.
+Necesita AutoHotkey v1 instalado y la carpeta "pantalla-cliente" al lado de esta carpeta:
+
+   MovieTime\
+      enlace-movietime\   (esta carpeta)
+      pantalla-cliente\  (paneles web, fotos y publicidad)
+
+1. Doble clic en MovieTime-Enlace.ahk. Aparece un icono en la bandeja (junto al reloj).
+2. Se abren el panel del colaborador y la pantalla del cliente.
+3. Con TumiSoft abierto, agrega un producto en el panel: el codigo se escribe en TumiSoft + Enter.
+
+SI NO ESCRIBE EN TUMISOFT
+- Clic derecho en el icono de la bandeja > "Mostrar ventanas detectadas": dice si encontro TumiSoft.
+  Si no, copia el titulo o el nombre del .exe de TumiSoft en TitulosTumi / ProcesosTumi (inicio del .ahk).
+- Clic derecho > "Probar envio a TumiSoft": escribe 0031 en TumiSoft.
+- Si escribe pero no cae en el buscador: pon el mouse sobre el cuadro "Buscar productos" de TumiSoft y presiona F8.
+  Desde entonces hace clic ahi antes de escribir cada codigo (F9 borra esa calibracion).
+- Clic derecho > "Ver registro": enlace.log dice que paso en cada envio. Mandame ese archivo si sigue fallando.
+
+Teclas: F1 limpia el buscador de TumiSoft | F8 calibrar buscador | F9 borrar calibracion
