@@ -5,32 +5,31 @@
  <div class="list" id="list"></div>
  <footer><span>TOTAL</span><span id="tot"></span></footer>
  <div class="full hide fade" id="thanks"><img class="lg" src="logo-movietime.svg" alt=""><h1>¡Gracias por tu compra!</h1><p>Disfruta la función 🍿</p></div>
- <div class="full hide" id="ads"><img class="lg" src="logo-movietime.svg" alt=""><h1 id="at"></h1><p id="as"></p></div>
+ <div class="full ads" id="ads"><div class="abg" id="abg"></div><img class="afg" id="afg" alt=""><div class="atx hide" id="atx"><h1 id="at"></h1><p id="as"></p></div></div>
 </div>
 <script src="shared.js"></script>
 <script>
 const $=id=>document.getElementById(id);
-let lastSig='',lastChange=Date.now(),slide=0,slideTimer=0;
+let lastSig='',slide=0,slideTimer=0;
 document.addEventListener('dblclick',()=>document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen());
 function render(s){
-  const sig=JSON.stringify([s.items,s.status]);
-  if(sig!==lastSig){lastSig=sig;lastChange=Date.now()}
-  $('list').innerHTML=!s.items.length?'<div class="empty">¡Bienvenido a Movie Time!</div>':s.items.map(i=>`<div class="line"><span class="q">${i.qty}x</span><span>${i.name}</span><span class="p">${PC.money(i.price*i.qty)}</span></div>`).join('');
+  $('list').innerHTML=!s.items.length?'<div class="empty">¡Bienvenido a Movie Time!</div>':s.items.map(i=>`<div class="line"><span class="q">${i.qty}x</span><span>${i.name}${i.desc?`<small>${i.desc}</small>`:""}</span><span class="p">${PC.money(i.price*i.qty)}</span></div>`).join('');
   $('tot').textContent=PC.money(PC.total());
   $('thanks').classList.toggle('hide',s.status!=='gracias');
   check();
 }
 function check(){
-  const s=PC.state,showAds=s.status==='idle'&&Date.now()-lastChange>=s.idleSeconds*1000;
+  const s=PC.state,showAds=s.status==='idle';
   $('ads').classList.toggle('hide',!showAds);
   if(showAds&&!slideTimer){showSlide();slideTimer=setInterval(showSlide,s.slideSeconds*1000)}
   if(!showAds&&slideTimer){clearInterval(slideTimer);slideTimer=0}
 }
 function showSlide(){
   const sl=PC.state.slides;if(!sl.length)return;const x=sl[slide++%sl.length];
-  $('at').textContent=x.title;$('as').textContent=x.sub;
-  $('ads').style.backgroundImage=x.image?`linear-gradient(#0006,#0006),url("${x.image}")`:'';
+  if(x.image){$('afg').src=x.image;$('abg').style.backgroundImage=`url("${x.image}")`}
+  $('afg').classList.toggle('hide',!x.image);
+  $('at').textContent=x.title;$('as').textContent=x.sub;$('atx').classList.toggle('hide',!(x.title||x.sub));
   $('ads').classList.remove('fade');void $('ads').offsetWidth;$('ads').classList.add('fade');
 }
-PC.subscribe(render);setInterval(check,1000);
+PC.subscribe(render);
 </script></body></html>

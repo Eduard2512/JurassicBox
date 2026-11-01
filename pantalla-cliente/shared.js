@@ -1,7 +1,7 @@
 // Estado compartido entre el panel del colaborador y la pantalla del cliente.
 // Se sincroniza con BroadcastChannel + localStorage (misma PC, sin internet).
 const PC = (() => {
-  const KEY = 'pc_state_v2';
+  const KEY = 'pc_state_v3';
   const ch = 'BroadcastChannel' in window ? new BroadcastChannel('pc_channel') : null;
   const DEFAULT = {
     items: [],            // {code,name,price,qty}
@@ -11,49 +11,57 @@ const PC = (() => {
         "code": "2512",
         "name": "Combo 1",
         "price": 23.5,
-        "cat": "Combos Salada"
+        "cat": "Combos Salada",
+        "desc": "1 Pop corn salada mediana + 1 gaseosa mediana + 1 cañonazo"
       },
       {
         "code": "3088",
         "name": "Combo 1 + Hot Dog",
         "price": 32.4,
-        "cat": "Combos Salada"
+        "cat": "Combos Salada",
+        "desc": "1 Pop corn salada mediana + 1 gaseosa mediana + 1 cañonazo + 1 hot dog"
       },
       {
         "code": "2517",
         "name": "Combo 2",
         "price": 28.5,
-        "cat": "Combos Salada"
+        "cat": "Combos Salada",
+        "desc": "2 Pop corn saladas chicas + 2 gaseosas chicas"
       },
       {
         "code": "2518",
         "name": "Combo 2 + Hot Dog",
         "price": 37.4,
-        "cat": "Combos Salada"
+        "cat": "Combos Salada",
+        "desc": "2 Pop corn saladas chicas + 2 gaseosas chicas + 1 hot dog"
       },
       {
         "code": "2484",
         "name": "Combo 3",
         "price": 33.5,
-        "cat": "Combos Salada"
+        "cat": "Combos Salada",
+        "desc": "1 Pop corn salada gigante + 2 gaseosas medianas"
       },
       {
         "code": "2485",
         "name": "Combo 3 + Hot Dog",
         "price": 42.4,
-        "cat": "Combos Salada"
+        "cat": "Combos Salada",
+        "desc": "1 Pop corn salada gigante + 2 gaseosas medianas + 1 hot dog"
       },
       {
         "code": "2488",
         "name": "Combo 4",
         "price": 37.5,
-        "cat": "Combos Salada"
+        "cat": "Combos Salada",
+        "desc": "1 Pop corn salada gigante + 2 gaseosas grandes"
       },
       {
         "code": "2489",
         "name": "Combo 4 + Hot Dog",
         "price": 46.4,
-        "cat": "Combos Salada"
+        "cat": "Combos Salada",
+        "desc": "1 Pop corn salada gigante + 2 gaseosas grandes + 1 hot dog"
       },
       {
         "code": "2611",
@@ -249,11 +257,68 @@ const PC = (() => {
       }
     ],
     slides: [
-      { title: 'Combo Movie Time', sub: 'Canchita grande + 2 gaseosas a precio especial', image: '' },
-      { title: 'Cartelera de hoy', sub: 'Consulta las funciones en boletería', image: '' }
+      {
+        "title": "",
+        "sub": "",
+        "image": "publicidad/MT-RECURSOS.jpg"
+      },
+      {
+        "title": "",
+        "sub": "",
+        "image": "publicidad/avengers-doomsday-dob-r.jpg"
+      },
+      {
+        "title": "",
+        "sub": "",
+        "image": "publicidad/carmen-diferido-r.jpg"
+      },
+      {
+        "title": "",
+        "sub": "",
+        "image": "publicidad/clayface-dob.jpg"
+      },
+      {
+        "title": "",
+        "sub": "",
+        "image": "publicidad/duna-parte-3-dob-r.jpg"
+      },
+      {
+        "title": "",
+        "sub": "",
+        "image": "publicidad/ekeko-el-muneco-de-la-suerte.jpg"
+      },
+      {
+        "title": "",
+        "sub": "",
+        "image": "publicidad/el-heladero-dulce-sabor-a-muerte.jpg"
+      },
+      {
+        "title": "",
+        "sub": "",
+        "image": "publicidad/el-pintor-de-los-milagros.jpg"
+      },
+      {
+        "title": "",
+        "sub": "",
+        "image": "publicidad/godzilla-minus-zero-dob-r.jpg"
+      },
+      {
+        "title": "",
+        "sub": "",
+        "image": "publicidad/stray-kids-world-tour-run-it-live-viewing-r.jpg"
+      },
+      {
+        "title": "",
+        "sub": "",
+        "image": "publicidad/street-figther-dob.jpg"
+      },
+      {
+        "title": "",
+        "sub": "",
+        "image": "publicidad/wildwood-el-bosque-salvaje-funcion-matine.jpg"
+      }
     ],
-    idleSeconds: 20,      // segundos sin actividad para pasar a publicidad
-    slideSeconds: 7,
+    slideSeconds: 8,
     currency: 'S/'
   };
   let state = load();

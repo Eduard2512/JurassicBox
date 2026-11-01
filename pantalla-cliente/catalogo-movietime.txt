@@ -1,40 +1,40 @@
-2512;Combo 1;23.50;Combos Salada
-3088;Combo 1 + Hot Dog;32.40;Combos Salada
-2517;Combo 2;28.50;Combos Salada
-2518;Combo 2 + Hot Dog;37.40;Combos Salada
-2484;Combo 3;33.50;Combos Salada
-2485;Combo 3 + Hot Dog;42.40;Combos Salada
-2488;Combo 4;37.50;Combos Salada
-2489;Combo 4 + Hot Dog;46.40;Combos Salada
-2611;Combo Dulce 1;26.00;Combos Dulce
-2612;Combo Dulce 2;31.50;Combos Dulce
-2613;Mixto 3;36.50;Combos Dulce
-2614;Mixto 4;40.00;Combos Dulce
-3135;Power Salad;35.50;Combos Bar
-3133;Power Dulce;35.50;Combos Bar
-3615;VIP Individual;26.50;Combos Vip
-3616;VIP Dúo;39.90;Combos Vip
-3617;VIP Trío;54.90;Combos Vip
-0031;Pop Corn Salada Chico;14.00;Salada
-0032;Pop Corn Salada Mediano;15.00;Salada
-0033;Pop Corn Salada Grande;17.00;Salada
-0047;Pop Corn Salada Gigante;25.00;Salada
-2606;Pop Corn Dulce Chico;17.50;Dulce
-2607;Pop Corn Dulce Mediana;18.50;Dulce
-2608;Pop Corn Dulce Grande;20.50;Dulce
-2609;Pop Corn Dulce Gigante;30.00;Dulce
-2085;Gaseosa Vaso Chico;8.00;Bebidas
-2086;Gaseosa Vaso Mediano;10.00;Bebidas
-2087;Gaseosa Vaso Grande;11.50;Bebidas
-0026;Agua;6.50;Bebidas
-3090;Chicha Botella;4.50;Bebidas
-3830;Pepero;8.00;Golosinas Y Otros
-0009;Wafer;5.00;Golosinas Y Otros
-1911;Gomita Ambrosito;3.50;Golosinas Y Otros
-0016;Lenteja Cajita;5.00;Golosinas Y Otros
-3831;Choco Pie;3.50;Golosinas Y Otros
-2527;Cañonazo;3.50;Golosinas Y Otros
-2899;Nacho;13.50;Golosinas Y Otros
-0013;Sublime Clásico;5.00;Golosinas Y Otros
-0004;Travesuras;5.00;Golosinas Y Otros
-2823;Pizza Personal;17.50;Golosinas Y Otros
+2512;Combo 1;23.50;Combos Salada;1 Pop corn salada mediana + 1 gaseosa mediana + 1 cañonazo
+3088;Combo 1 + Hot Dog;32.40;Combos Salada;1 Pop corn salada mediana + 1 gaseosa mediana + 1 cañonazo + 1 hot dog
+2517;Combo 2;28.50;Combos Salada;2 Pop corn saladas chicas + 2 gaseosas chicas
+2518;Combo 2 + Hot Dog;37.40;Combos Salada;2 Pop corn saladas chicas + 2 gaseosas chicas + 1 hot dog
+2484;Combo 3;33.50;Combos Salada;1 Pop corn salada gigante + 2 gaseosas medianas
+2485;Combo 3 + Hot Dog;42.40;Combos Salada;1 Pop corn salada gigante + 2 gaseosas medianas + 1 hot dog
+2488;Combo 4;37.50;Combos Salada;1 Pop corn salada gigante + 2 gaseosas grandes
+2489;Combo 4 + Hot Dog;46.40;Combos Salada;1 Pop corn salada gigante + 2 gaseosas grandes + 1 hot dog
+2611;Combo Dulce 1;26.00;Combos Dulce;
+2612;Combo Dulce 2;31.50;Combos Dulce;
+2613;Mixto 3;36.50;Combos Dulce;
+2614;Mixto 4;40.00;Combos Dulce;
+3135;Power Salad;35.50;Combos Bar;
+3133;Power Dulce;35.50;Combos Bar;
+3615;VIP Individual;26.50;Combos Vip;
+3616;VIP Dúo;39.90;Combos Vip;
+3617;VIP Trío;54.90;Combos Vip;
+0031;Pop Corn Salada Chico;14.00;Salada;
+0032;Pop Corn Salada Mediano;15.00;Salada;
+0033;Pop Corn Salada Grande;17.00;Salada;
+0047;Pop Corn Salada Gigante;25.00;Salada;
+2606;Pop Corn Dulce Chico;17.50;Dulce;
+2607;Pop Corn Dulce Mediana;18.50;Dulce;
+2608;Pop Corn Dulce Grande;20.50;Dulce;
+2609;Pop Corn Dulce Gigante;30.00;Dulce;
+2085;Gaseosa Vaso Chico;8.00;Bebidas;
+2086;Gaseosa Vaso Mediano;10.00;Bebidas;
+2087;Gaseosa Vaso Grande;11.50;Bebidas;
+0026;Agua;6.50;Bebidas;
+3090;Chicha Botella;4.50;Bebidas;
+3830;Pepero;8.00;Golosinas Y Otros;
+0009;Wafer;5.00;Golosinas Y Otros;
+1911;Gomita Ambrosito;3.50;Golosinas Y Otros;
+0016;Lenteja Cajita;5.00;Golosinas Y Otros;
+3831;Choco Pie;3.50;Golosinas Y Otros;
+2527;Cañonazo;3.50;Golosinas Y Otros;
+2899;Nacho;13.50;Golosinas Y Otros;
+0013;Sublime Clásico;5.00;Golosinas Y Otros;
+0004;Travesuras;5.00;Golosinas Y Otros;
+2823;Pizza Personal;17.50;Golosinas Y Otros;

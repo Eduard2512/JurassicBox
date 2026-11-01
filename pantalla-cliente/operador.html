@@ -8,11 +8,11 @@
   <div class="msg" id="msg"></div>
   <div class="row" id="tabs" style="flex-wrap:wrap"></div><div class="grid" id="grid"></div>
   <details><summary>Configuración (catálogo y publicidad)</summary>
-   <p style="color:var(--mut);margin:8px 0">Catálogo: <code>código;nombre;precio;categoría</code> por línea</p>
+   <p style="color:var(--mut);margin:8px 0">Catálogo: <code>código;nombre;precio;categoría;contenido</code> por línea</p>
    <textarea id="cat"></textarea>
-   <p style="color:var(--mut);margin:8px 0">Publicidad/cartelera: <code>título;subtítulo;url imagen (opcional)</code></p>
+   <p style="color:var(--mut);margin:8px 0">Publicidad/cartelera: <code>título;subtítulo;ruta o url de imagen</code> (título y subtítulo pueden ir vacíos si la imagen ya trae texto)</p>
    <textarea id="sl"></textarea>
-   <div class="row" style="margin-top:8px"><label>Seg. inactivo <input id="idle" type="number" style="width:80px"></label><label>Seg. por slide <input id="ss" type="number" style="width:80px"></label></div>
+   <div class="row" style="margin-top:8px"><label>Seg. por slide <input id="ss" type="number" style="width:80px"></label></div>
    <button id="saveCfg">Guardar</button> <button class="sec" id="openCl">Abrir pantalla del cliente</button>
   </details>
  </section>
@@ -46,12 +46,12 @@ $('fin').onclick=()=>{if(PC.state.items.length){PC.finish();setTimeout(()=>PC.cl
 $('clr').onclick=()=>PC.clear();
 $('openCl').onclick=()=>window.open('cliente.html','pantalla_cliente','width=1280,height=720');
 const s0=PC.state;
-$('cat').value=s0.catalog.map(p=>[p.code,p.name,p.price,p.cat||''].join(';')).join('\n');
+$('cat').value=s0.catalog.map(p=>[p.code,p.name,p.price,p.cat||'',p.desc||''].join(';')).join('\n');
 $('sl').value=s0.slides.map(x=>[x.title,x.sub,x.image].join(';')).join('\n');
-$('idle').value=s0.idleSeconds;$('ss').value=s0.slideSeconds;
+$('ss').value=s0.slideSeconds;
 $('saveCfg').onclick=()=>PC.update(s=>{
-  s.catalog=$('cat').value.split('\n').map(l=>l.split(';')).filter(a=>a[0]&&a[1]).map(a=>({code:a[0].trim(),name:a[1].trim(),price:parseFloat(a[2])||0,cat:(a[3]||'').trim()}));
+  s.catalog=$('cat').value.split('\n').map(l=>l.split(';')).filter(a=>a[0]&&a[1]).map(a=>({code:a[0].trim(),name:a[1].trim(),price:parseFloat(a[2])||0,cat:(a[3]||'').trim(),desc:(a[4]||'').trim()}));
   s.slides=$('sl').value.split('\n').map(l=>l.split(';')).filter(a=>a[0]).map(a=>({title:a[0].trim(),sub:(a[1]||'').trim(),image:(a[2]||'').trim()}));
-  s.idleSeconds=+$('idle').value||20;s.slideSeconds=+$('ss').value||7;
+  s.slideSeconds=+$('ss').value||7;
 });
 </script></body></html>
