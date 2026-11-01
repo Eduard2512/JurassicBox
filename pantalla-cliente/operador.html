@@ -1,5 +1,5 @@
 <!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Panel colaborador</title><link rel="stylesheet" href="style.css"></head><body>
+<title>Panel colaborador · Movie Time</title><link rel="stylesheet" href="style.css"></head><body>
 <div class="page"><div class="brand"><span class="logo"><img src="logo-movietime.svg" alt="Movie Time"></span><h1>Panel del colaborador</h1></div>
 <div class="op">
  <section class="panel">
@@ -18,8 +18,10 @@
  </section>
  <section class="panel">
   <h2>Venta actual</h2>
+  <label class="lnk"><input type="checkbox" id="lnk"> Enviar también a TumiSoft <small>(requiere MovieTime-Enlace.ahk abierto)</small></label>
   <table><thead><tr><th>Producto</th><th>Cant.</th><th>Subtotal</th><th></th></tr></thead><tbody id="body"></tbody></table>
   <div class="tot" id="tot"></div>
+  <p class="hint" id="hint">Para quitar un producto de la venta, bórralo también en TumiSoft.</p>
   <div class="row"><button class="ok" id="fin">Finalizar venta</button><button class="bad" id="clr">Cancelar</button></div>
  </section>
 </div></div>
@@ -37,10 +39,14 @@ function render(s){
 }
 PC.subscribe(render);
 $('tabs').onclick=e=>{const b=e.target.closest('[data-t]');if(b){tab=b.dataset.t==='Todos'?'':b.dataset.t;render(PC.state)}};
-$('grid').onclick=e=>{const b=e.target.closest('[data-c]');if(b){PC.addByCode(b.dataset.c);$('code').focus()}};
+$('grid').onclick=e=>{const b=e.target.closest('[data-c]');if(b){PC.addByCode(b.dataset.c);PC.link.send(b.dataset.c);$('code').focus()}};
 $('body').onclick=e=>{const t=e.target;
-  if(t.dataset.m)PC.setQty(+t.dataset.m,-1);if(t.dataset.p)PC.setQty(+t.dataset.p,1);if(t.dataset.x)PC.remove(+t.dataset.x)};
-function addCode(){const v=$('code').value;if(!v)return;$('msg').textContent=PC.addByCode(v)?'':'Código no encontrado: '+v;$('code').value='';$('code').focus()}
+  if(t.dataset.m)PC.setQty(+t.dataset.m,-1);if(t.dataset.p){const it=PC.state.items[+t.dataset.p];PC.setQty(+t.dataset.p,1);if(it)PC.link.send(it.code)}if(t.dataset.x)PC.remove(+t.dataset.x)};
+function addCode(){const v=$('code').value.trim();if(!v)return;
+  const ok=PC.addByCode(v);PC.link.send(v);
+  $('msg').textContent=ok?'':(PC.link.on?'No está en el catálogo de la pantalla (se envió a TumiSoft): '+v:'Código no encontrado: '+v);
+  $('code').value='';$('code').focus()}
+$('lnk').checked=PC.link.on;$('lnk').onchange=()=>{PC.link.on=$('lnk').checked};
 $('addBtn').onclick=addCode;$('code').onkeydown=e=>{if(e.key==='Enter')addCode()};
 $('fin').onclick=()=>{if(PC.state.items.length){PC.finish();setTimeout(()=>PC.clear(),6000)}};
 $('clr').onclick=()=>PC.clear();

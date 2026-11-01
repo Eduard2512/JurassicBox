@@ -312,7 +312,6 @@ const PC = (() => {
   };
   let state = load();
   const subs = [];
-  let lastRev = null;
 
   function load() {
     try { return Object.assign({}, DEFAULT, JSON.parse(localStorage.getItem(KEY) || '{}')); }
@@ -358,28 +357,29 @@ const PC = (() => {
     remove(idx) { this.update(s => { s.items.splice(idx, 1); s.status = s.items.length ? 'venta' : 'idle'; }); },
     finish() { this.update(s => { s.status = 'gracias'; }); },
     clear() { this.update(s => { s.items = []; s.status = 'idle'; }); },
-    // Puente con AutoHotkey: el .ahk escribe estado.js y la pantalla del cliente lo lee cada ~0.7 s
-    applyBridge(b) {
-      if (!b || b.rev === lastRev) return;
-      lastRev = b.rev;
-      if (b.catalog && b.catalog.length) state.catalog = b.catalog.map(c => ({ ...c, price: +c.price }));
-      state.items = (b.items || []).map(it => {
-        const p = state.catalog.find(c => c.code === it.code) || { name: it.code, price: 0 };
-        return { code: it.code, name: p.name, price: p.price, cat: p.cat, desc: p.desc, qty: +it.qty };
-      });
-      state.status = b.status || 'idle';
-      notify();
-    },
-    watchBridge(ms = 700) {
-      const poll = () => {
-        const s = document.createElement('script');
-        s.src = 'estado.js?t=' + Date.now();
-        s.onload = () => { s.remove(); if (window.PC_BRIDGE) this.applyBridge(window.PC_BRIDGE); };
-        s.onerror = () => s.remove();
-        document.head.appendChild(s);
+    // Enlace con TumiSoft: el panel publica el codigo en el titulo de su ventana
+    // (MTCMD|<seq>:<codigo>;...|) y MovieTime-Enlace.ahk lo lee y lo escribe en TumiSoft.
+    link: (() => {
+      const K = 'pc_link_on', base = document.title;
+      let q = [], last = 0, timer = 0;
+      const get = () => { try { return localStorage.getItem(K) !== '0'; } catch (e) { return true; } };
+      return {
+        get on() { return get(); },
+        set on(v) { try { localStorage.setItem(K, v ? '1' : '0'); } catch (e) {} },
+        send(code) {
+          code = String(code || '').replace(/[^A-Za-z0-9]/g, '');
+          if (!code || !get()) return;
+          const seq = Math.max(last + 1, Date.now() * 1000);
+          last = seq;
+          const now = Date.now();
+          q = q.filter(c => now - c.t < 3000).slice(-5);
+          q.push({ seq, code, t: now });
+          document.title = base + ' MTCMD|' + q.map(c => c.seq + ':' + c.code).join(';') + '|';
+          clearTimeout(timer);
+          timer = setTimeout(() => { document.title = base; }, 1500);
+        }
       };
-      poll(); setInterval(poll, ms);
-    },
+    })(),
     reset() { localStorage.removeItem(KEY); refresh(); }
   };
 })();
