@@ -37,4 +37,5 @@
 2899;Nacho;13.50;Golosinas Y Otros;
 0013;Sublime Clásico;5.00;Golosinas Y Otros;
 0004;Travesuras;5.00;Golosinas Y Otros;
-2823;Pizza Personal;17.50;Golosinas Y Otros;
+2823;Super Pizza Personal;17.50;Sandwich Y Embutidos;
+1677;Hot Dog;11.50;Sandwich Y Embutidos;

@@ -1,7 +1,7 @@
 // Estado compartido entre el panel del colaborador y la pantalla del cliente.
 // Se sincroniza con BroadcastChannel + localStorage (misma PC, sin internet).
 const PC = (() => {
-  const KEY = 'pc_state_v5';
+  const KEY = 'pc_state_v6';
   const ch = 'BroadcastChannel' in window ? new BroadcastChannel('pc_channel') : null;
   const DEFAULT = {
     items: [],            // {code,name,price,qty}
@@ -260,9 +260,15 @@ const PC = (() => {
       },
       {
         "code": "2823",
-        "name": "Pizza Personal",
+        "name": "Super Pizza Personal",
         "price": 17.5,
-        "cat": "Golosinas Y Otros"
+        "cat": "Sandwich Y Embutidos"
+      },
+      {
+        "code": "1677",
+        "name": "Hot Dog",
+        "price": 11.5,
+        "cat": "Sandwich Y Embutidos"
       }
     ],
     slides: [
