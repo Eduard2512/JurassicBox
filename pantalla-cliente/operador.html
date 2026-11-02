@@ -17,6 +17,10 @@
   </details>
  </section>
  <section class="panel">
+  <div class="cv" id="cv">
+   <div class="cvh"><b>Lo que ve el cliente</b><button class="sec" id="cvToggle" title="Mostrar u ocultar la miniatura"></button></div>
+   <div class="cvbox" id="cvbox"><iframe id="cvf" title="Vista del cliente" tabindex="-1"></iframe></div>
+  </div>
   <h2>Venta actual</h2>
   <div class="lnk"><b>Enviar a TumiSoft:</b>
    <label><input type="radio" name="lm" value="live"> Mientras agrego</label>
@@ -68,6 +72,14 @@ $('sendTumi').onclick=()=>{const p=pending();if(!p.codes.length)return;
 $('addBtn').onclick=addCode;$('code').onkeydown=e=>{if(e.key==='Enter')addCode()};
 $('fin').onclick=()=>PC.finish();
 $('clr').onclick=()=>PC.clear();
+// Miniatura de la pantalla del cliente: la misma pagina a 1920x1080 reducida con CSS
+const cvOn=()=>{try{return localStorage.getItem('pc_cv_on')!=='0'}catch(e){return true}};
+function applyCv(){const on=cvOn();$('cvbox').classList.toggle('hide',!on);$('cvToggle').textContent=on?'Ocultar':'Mostrar';
+  const f=$('cvf');if(on){if(!f.getAttribute('src'))f.src='cliente.html?mini=1';scaleCv()}else f.removeAttribute('src')}   // oculta = no consume CPU
+function scaleCv(){const b=$('cvbox');if(b.clientWidth)$('cvf').style.transform='scale('+(b.clientWidth/1920)+')'}
+new ResizeObserver(scaleCv).observe($('cvbox'));
+$('cvToggle').onclick=()=>{try{localStorage.setItem('pc_cv_on',cvOn()?'0':'1')}catch(e){}applyCv()};
+applyCv();
 $('openCl').onclick=()=>window.open('cliente.html','pantalla_cliente','width=1280,height=720');
 function loadCfg(){const s0=PC.state;
   $('cat').value=s0.catalog.map(p=>[p.code,p.name,p.price,p.cat||'',p.desc||'',p.img||''].join(';')).join('\n');

@@ -21,7 +21,10 @@
 <script>
 const $=id=>document.getElementById(id);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-document.addEventListener('dblclick',()=>document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen());
+// ?mini=1 -> vista en miniatura dentro del panel del colaborador (sin animaciones pesadas ni pantalla completa)
+const MINI=new URLSearchParams(location.search).has('mini');
+if(MINI)document.documentElement.classList.add('mini');
+else document.addEventListener('dblclick',()=>document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen());
 const tick=()=>{$('clock').textContent=new Date().toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit',hour12:false})};tick();setInterval(tick,10000);
 
 /* ---------- Fotos de producto (con ilustración si no hay foto) ---------- */

@@ -28,7 +28,7 @@ PausaEntreProductos  := 1200     ; milisegundos de espera DESPUES de cada produc
 PausaAntesEnter      := 150      ; milisegundos entre terminar de escribir el codigo y presionar Enter (da tiempo a que TumiSoft encuentre el producto)
 LimpiarCampoEntre    := true     ; en una lista, borra el buscador antes de escribir el siguiente codigo (evita que se peguen dos codigos)
 PanelAncho           := 1000     ; tamano de la ventana del panel del colaborador
-PanelAlto            := 720
+PanelAlto            := 820
 
 UltimoSeq    := 0
 Inicializado := false

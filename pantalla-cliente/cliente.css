@@ -115,3 +115,9 @@ body{font-family:Montserrat,"Segoe UI",system-ui,sans-serif;background:#000;colo
 .list.compact{gap:.7rem}
 .compact .line{padding:.8rem 1.8rem;grid-template-columns:4rem 1fr auto;gap:1.3rem;border-radius:1.2rem}
 .compact .qty{width:4rem;height:4rem;font-size:1.8rem}.compact .nm{font-size:1.7rem}.compact .ds{font-size:1.05rem;margin-top:.2rem}.compact .pr{font-size:2rem}.compact .pr small{display:none}
+
+/* Miniatura dentro del panel del colaborador */
+.mini body{cursor:auto}
+.mini .ads .sl.on img,.mini .tile img,.mini .tile svg{animation:none}
+.mini .ads .prog,.mini .clock{display:none}
+.mini .line,.mini .tile,.mini .thanks .check{animation:none}
