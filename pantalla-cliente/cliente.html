@@ -87,14 +87,19 @@ function buildSlides(){
       d.appendChild(row)});
     root.insertBefore(d,$('prog'));nodes.push(d)}
   s.slides.filter(x=>x.image).forEach(x=>{const d=document.createElement('div');d.className='sl';
-    d.innerHTML=`<img src="${esc(x.image)}" alt="" decoding="async">`;
+    d.innerHTML='<img alt="" decoding="async">';d._src=x.image;     // la imagen se carga solo cuando le toca (ahorra memoria)
     d.firstChild.onerror=()=>{d.remove();nodes=nodes.filter(n=>n!==d);if(cur>=nodes.length)cur=0;publishAd()};
     if(x.title||x.sub)d.insertAdjacentHTML('beforeend',`<div style="position:absolute;left:0;right:0;bottom:8%;text-align:center;text-shadow:0 .2rem 1rem #000"><div style="font-size:5rem;font-weight:800">${esc(x.title||'')}</div><div style="font-size:2.4rem">${esc(x.sub||'')}</div></div>`);
     root.insertBefore(d,$('prog'));nodes.push(d)});
 }
+// Mantiene cargadas solo la imagen actual, la anterior (por el fundido) y la siguiente
+function warm(){
+  const N=nodes.length;
+  nodes.forEach((n,k)=>{if(!n._src)return;const near=k===cur||k===(cur+1)%N||k===(cur-1+N)%N,im=n.firstChild;
+    if(near){if(!im.getAttribute('src'))im.src=n._src}else if(im.getAttribute('src'))im.removeAttribute('src')})}
 function showSlide(i,silent){
   if(!nodes.length)return;
-  nodes.forEach(n=>n.classList.remove('on'));cur=((i%nodes.length)+nodes.length)%nodes.length;
+  nodes.forEach(n=>n.classList.remove('on'));cur=((i%nodes.length)+nodes.length)%nodes.length;warm();
   const n=nodes[cur];void n.offsetWidth;n.classList.add('on');
   const root=$('ads'),p=$('prog');root.style.setProperty('--dur',PC.state.slideSeconds+'s');
   p.classList.remove('run');void p.offsetWidth;p.classList.add('run');     // si esta en pausa, la barra queda congelada por CSS
@@ -112,10 +117,10 @@ function setPaused(v){
   schedule();publishAd();
 }
 function checkAds(){
-  const s=PC.state,on=s.status==='idle',root=$('ads'),cl=comboLists(s);
+  const s=PC.state,on=s.status==='idle',root=$('ads');
   root.classList.toggle('hide',!on);
   if(on){
-    const sig=JSON.stringify([s.slides,cl.sal.concat(cl.dul).map(p=>p.code+p.price+p.name),s.slideSeconds]);
+    const cl=comboLists(s),sig=JSON.stringify([s.slides,cl.sal.concat(cl.dul).map(p=>p.code+p.price+p.name),s.slideSeconds]);
     if(sig!==adsSig||!nodes.length){adsSig=sig;buildSlides();if(cur>=nodes.length)cur=0}
     if(!running){running=true;showSlide(paused?cur:0)}   // pausada: vuelve a la misma imagen; si no, empieza de nuevo
     schedule();

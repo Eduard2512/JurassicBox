@@ -1,6 +1,6 @@
-@font-face{font-family:Montserrat;font-weight:500;src:url(fonts/Montserrat-500.ttf)}
-@font-face{font-family:Montserrat;font-weight:700;src:url(fonts/Montserrat-700.ttf)}
-@font-face{font-family:Montserrat;font-weight:800;src:url(fonts/Montserrat-800.ttf)}
+@font-face{font-family:Montserrat;font-weight:500;font-display:swap;src:url(fonts/Montserrat-500.woff2) format('woff2')}
+@font-face{font-family:Montserrat;font-weight:700;font-display:swap;src:url(fonts/Montserrat-700.woff2) format('woff2')}
+@font-face{font-family:Montserrat;font-weight:800;font-display:swap;src:url(fonts/Montserrat-800.woff2) format('woff2')}
 :root{--blue:#0f1198;--blue2:#1a1fe0;--navy:#070a52;--gold:#ffd23f;--red:#d9000d;--ink:#10142e;--mut:#5b6080;--ok:#16c172}
 *{box-sizing:border-box;margin:0;padding:0}
 html{font-size:min(calc(100vw/120),calc(100vh/67.5))}   /* 1rem = 16px en pantalla 1920x1080 */
@@ -71,10 +71,10 @@ body{font-family:Montserrat,"Segoe UI",system-ui,sans-serif;background:#000;colo
 
 /* Publicidad */
 .ads{position:fixed;inset:0;background:#000;z-index:5;overflow:hidden}
-.ads .sl{position:absolute;inset:0;opacity:0;transition:opacity 1.2s ease}
-.ads .sl.on{opacity:1}
-.ads .sl>img{width:100%;height:100%;object-fit:cover;display:block;transform:scale(1);will-change:transform}
-.ads .sl.on>img{animation:kb var(--dur,8s) ease-out forwards}
+.ads .sl{position:absolute;inset:0;opacity:0;visibility:hidden;transition:opacity 1.2s ease,visibility 0s linear 1.2s}   /* invisible = no se pinta */
+.ads .sl.on{opacity:1;visibility:visible;transition-delay:0s}
+.ads .sl>img{width:100%;height:100%;object-fit:cover;display:block;transform:scale(1)}
+.ads .sl.on>img{animation:kb var(--dur,8s) ease-out forwards;will-change:transform}
 .ads .prog{position:absolute;left:0;bottom:0;height:.45rem;background:linear-gradient(90deg,var(--red),var(--gold));width:0;z-index:2}
 .ads .prog.run{animation:prog var(--dur,8s) linear forwards}
 /* Slide de combos (generado): 2 filas de 4 */

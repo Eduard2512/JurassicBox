@@ -83,7 +83,8 @@ $('clr').onclick=()=>PC.clear();
 // Miniatura de la pantalla del cliente: la misma pagina a 1920x1080 reducida con CSS
 const cvOn=()=>{try{return localStorage.getItem('pc_cv_on')!=='0'}catch(e){return true}};
 function applyCv(){const on=cvOn();$('cvbox').classList.toggle('hide',!on);$('cvToggle').textContent=on?'Ocultar':'Mostrar';
-  const f=$('cvf');if(on){if(!f.getAttribute('src'))f.src='cliente.html?mini=1';scaleCv()}else f.removeAttribute('src')}   // oculta = no consume CPU
+  const f=$('cvf'),url='cliente.html?mini=1';
+  if(on){if(f.dataset.on!=='1'){f.dataset.on='1';f.src=url}scaleCv()}else{f.dataset.on='0';f.src='about:blank'}}   // oculta = la pagina se descarga: no consume CPU
 function scaleCv(){const b=$('cvbox');if(b.clientWidth)$('cvf').style.transform='scale('+(b.clientWidth/1920)+')'}
 new ResizeObserver(scaleCv).observe($('cvbox'));
 $('cvToggle').onclick=()=>{try{localStorage.setItem('pc_cv_on',cvOn()?'0':'1')}catch(e){}applyCv()};
@@ -92,8 +93,11 @@ applyCv();
 const adCh='BroadcastChannel' in window?new BroadcastChannel('pc_ads'):null;
 let adSt=null,adSeen=0;
 const adCmd=(cmd,idx)=>adCh&&adCh.postMessage({t:'cmd',cmd,idx});
+let adSig='';
 function renderAd(){
-  const alive=adSt&&Date.now()-adSeen<7000,run=alive&&adSt.running;
+  const alive=!!adSt&&Date.now()-adSeen<7000,run=alive&&adSt.running;
+  const sig=[alive,run,alive&&adSt.paused,alive&&adSt.idx,alive&&adSt.total].join();
+  if(sig===adSig)return;adSig=sig;
   ['adPrev','adToggle','adNext'].forEach(i=>$(i).disabled=!alive);
   $('adToggle').textContent=alive&&adSt.paused?'▶ Continuar':'⏸ Pausar';
   $('adToggle').className=alive&&adSt.paused?'ok':'sec';

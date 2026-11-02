@@ -325,44 +325,54 @@ const PC = (() => {
     currency: 'S/',
     custom: { catalog: false, slides: false }   // true = lo edito el usuario en Configuracion (se conserva al actualizar el programa)
   };
-  let lastRaw = null, thanksTimer = 0;
-  let state = load();
+  let lastRaw = null, thanksTimer = 0, watchTimer = 0;
+  let state = parse(readRaw(), true);
   const subs = [];
 
-  function load() {
+  function readRaw() { try { return localStorage.getItem(KEY); } catch (e) { return null; } }
+  // Arma el estado a partir de lo guardado. Sin edicion del usuario se usa siempre el catalogo y la publicidad del programa.
+  function parse(raw, first) {
     let st = {};
-    try { lastRaw = localStorage.getItem(KEY); st = JSON.parse(lastRaw || '{}') || {}; } catch (e) { st = {}; }
-    const s = Object.assign({}, structuredClone(DEFAULT), st);
+    try { st = JSON.parse(raw || '{}') || {}; } catch (e) { st = {}; }
+    lastRaw = raw;
+    const s = Object.assign({ items: [], status: 'idle', slideSeconds: DEFAULT.slideSeconds, currency: DEFAULT.currency }, st);
     s.custom = Object.assign({ catalog: false, slides: false }, st.custom);
-    // sin edicion del usuario se usa siempre el catalogo y la publicidad del programa
-    if (!s.custom.catalog) s.catalog = structuredClone(DEFAULT.catalog);
-    if (!s.custom.slides) { s.slides = structuredClone(DEFAULT.slides); s.slideSeconds = DEFAULT.slideSeconds; }
+    if (!Array.isArray(s.items)) s.items = [];
+    if (!s.custom.catalog || !Array.isArray(st.catalog) || !st.catalog.length) { s.catalog = DEFAULT.catalog; s.custom.catalog = false; }
+    if (!s.custom.slides || !Array.isArray(st.slides)) { s.slides = DEFAULT.slides; s.slideSeconds = DEFAULT.slideSeconds; s.custom.slides = false; }
+    // si el programa se cerro mientras se mostraba "Gracias", no se queda pegado al abrirlo de nuevo
+    if (first && s.status === 'gracias' && Date.now() - (s.graciasAt || 0) > 9000) { s.items = []; s.status = 'idle'; }
     return s;
   }
   function save() {
     const out = Object.assign({}, state);
     if (!state.custom.catalog) delete out.catalog;
     if (!state.custom.slides) { delete out.slides; delete out.slideSeconds; }
-    try { lastRaw = JSON.stringify(out); localStorage.setItem(KEY, lastRaw); } catch (e) {}
-    if (ch) ch.postMessage('update');
+    lastRaw = JSON.stringify(out);
+    try { localStorage.setItem(KEY, lastRaw); } catch (e) {}
+    if (ch) ch.postMessage({ raw: lastRaw });      // el canal lleva el estado: funciona aunque localStorage no este disponible
     notify();
   }
-  function notify() { subs.forEach(f => f(state)); }
-  function refresh() {
-    let raw = null;
-    try { raw = localStorage.getItem(KEY); } catch (e) {}
-    if (raw === lastRaw) return;          // BroadcastChannel y 'storage' avisan los dos: se procesa una sola vez
-    state = load(); notify();
+  function notify() { subs.forEach(f => f(state)); watchThanks(); }
+  function receive(raw) {
+    if (raw == null || raw === lastRaw) return;    // BroadcastChannel y 'storage' avisan los dos: se procesa una sola vez
+    state = parse(raw, false); notify();
   }
-  if (ch) ch.onmessage = refresh;
-  window.addEventListener('storage', e => { if (e.key === KEY) refresh(); });
+  if (ch) ch.onmessage = e => receive(e.data && e.data.raw);
+  window.addEventListener('storage', e => { if (e.key === KEY) receive(e.newValue); });
+  // Si quien pidio "Gracias" cerro su ventana, otra ventana limpia la venta pasados unos segundos
+  function watchThanks() {
+    if (state.status !== 'gracias') { clearTimeout(watchTimer); watchTimer = 0; return; }
+    if (watchTimer) return;
+    watchTimer = setTimeout(() => { watchTimer = 0; if (state.status === 'gracias') api.clear(); }, Math.max(1000, 9000 - (Date.now() - (state.graciasAt || 0))));
+  }
 
   const cents = n => Math.round(n * 100);
   const lineTotal = i => cents(i.price) * i.qty / 100;
   const total = () => state.items.reduce((s, i) => s + cents(i.price) * i.qty, 0) / 100;
   const money = n => state.currency + ' ' + n.toFixed(2);
 
-  return {
+  const api = {
     get state() { return state; },
     subscribe(f) { subs.push(f); f(state); },
     total, lineTotal, money,
@@ -395,7 +405,7 @@ const PC = (() => {
     finish(ms = 6000) {
       if (!state.items.length) return;
       clearTimeout(thanksTimer);
-      this.update(s => { s.status = 'gracias'; });
+      this.update(s => { s.status = 'gracias'; s.graciasAt = Date.now(); });
       thanksTimer = setTimeout(() => { if (state.status === 'gracias') this.clear(); }, ms);
     },
     clear() { clearTimeout(thanksTimer); this.update(s => { s.items = []; s.status = 'idle'; }); },
@@ -428,6 +438,7 @@ const PC = (() => {
         sendMany(codes) { codes = codes.map(clean).filter(Boolean); if (codes.length && getMode() !== 'off') { publish(codes); return true; } return false; }
       };
     })(),
-    reset() { try { localStorage.removeItem(KEY); } catch (e) {} state = load(); notify(); }
+    reset() { try { localStorage.removeItem(KEY); } catch (e) {} state = parse(null, true); lastRaw = null; notify(); }
   };
+  return api;
 })();
