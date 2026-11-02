@@ -13,7 +13,8 @@ En el panel, **Enviar a TumiSoft** tiene tres modos: *Mientras agrego* (cada pro
 hay que quitarlo también en TumiSoft. El panel debe estar abierto y no llevar "TumiSoft" en su título.
 
 ## Personalizar
-- Productos, precios y contenido de combos: *Configuración* de `operador.html` (formato `código;nombre;precio;categoría;contenido`;
-  `catalogo-movietime.txt` tiene la lista lista para pegar).
-- Fotos: `productos/<codigo>.webp` (sin foto se muestra el logo).
+- Productos, precios y contenido de combos: *Configuración* de `operador.html` (formato `código;nombre;precio;categoría;contenido;foto`;
+  `catalogo-movietime.txt` tiene la lista lista para pegar). Lo que guardas ahí se conserva al actualizar el programa;
+  **Restaurar originales** vuelve a la lista que trae el programa.
+- Fotos: `productos/<codigo>.webp` (sin foto se muestra el logo). El campo `foto` permite reutilizar la imagen de otro código (p. ej. el pop corn dulce usa la del salado).
 - Publicidad: imágenes 1920x1080 en `publicidad/`, agregadas en *Configuración*.

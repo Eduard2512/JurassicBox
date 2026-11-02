@@ -73,12 +73,10 @@ body{font-family:Montserrat,"Segoe UI",system-ui,sans-serif;background:#000;colo
 .ads{position:fixed;inset:0;background:#000;z-index:5;overflow:hidden}
 .ads .sl{position:absolute;inset:0;opacity:0;transition:opacity 1.2s ease}
 .ads .sl.on{opacity:1}
-.ads .sl img{width:100%;height:100%;object-fit:cover;display:block;transform:scale(1)}
+.ads .sl img{width:100%;height:100%;object-fit:cover;display:block;transform:scale(1);will-change:transform}
 .ads .sl.on img{animation:kb var(--dur,8s) ease-out forwards}
 .ads .prog{position:absolute;left:0;bottom:0;height:.45rem;background:linear-gradient(90deg,var(--red),var(--gold));width:0;z-index:2}
 .ads .prog.run{animation:prog var(--dur,8s) linear forwards}
-.ads .brandmark{position:absolute;right:2.4rem;top:2rem;background:#fff;border-radius:.9rem;padding:.4rem .9rem;display:flex;opacity:.92;z-index:2;box-shadow:0 .4rem 1.2rem #0006}
-.ads .brandmark img{height:3rem;width:auto}
 /* Slide de combos (generado) */
 .sl.combos{background:radial-gradient(60rem 40rem at 80% 0,#4a55ff66,transparent 60%),linear-gradient(165deg,#1a1fe0,#0f1198 50%,#060844);display:flex;flex-direction:column;padding:4rem 5rem}
 .sl.combos h2{font-size:5.4rem;font-weight:800;text-transform:uppercase;background:linear-gradient(#fff,var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent;line-height:1}

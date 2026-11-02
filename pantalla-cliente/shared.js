@@ -68,28 +68,32 @@ const PC = (() => {
         "name": "Combo Dulce 1",
         "price": 26.0,
         "cat": "Combos Dulce",
-        "desc": "1 Pop corn dulce mediana + 1 gaseosa mediana + 1 cañonazo"
+        "desc": "1 Pop corn dulce mediana + 1 gaseosa mediana + 1 cañonazo",
+        "img": "2512"
       },
       {
         "code": "2612",
         "name": "Combo Dulce 2",
         "price": 31.5,
         "cat": "Combos Dulce",
-        "desc": "2 Pop corn dulces chicas + 2 gaseosas chicas"
+        "desc": "2 Pop corn dulces chicas + 2 gaseosas chicas",
+        "img": "2517"
       },
       {
         "code": "2613",
         "name": "Mixto 3",
         "price": 36.5,
         "cat": "Combos Dulce",
-        "desc": "1 Pop corn mixta gigante + 2 gaseosas medianas"
+        "desc": "1 Pop corn mixta gigante + 2 gaseosas medianas",
+        "img": "2484"
       },
       {
         "code": "2614",
         "name": "Mixto 4",
         "price": 40.0,
         "cat": "Combos Dulce",
-        "desc": "1 Pop corn mixta gigante + 2 gaseosas grandes"
+        "desc": "1 Pop corn mixta gigante + 2 gaseosas grandes",
+        "img": "2488"
       },
       {
         "code": "3135",
@@ -154,25 +158,29 @@ const PC = (() => {
         "code": "2606",
         "name": "Pop Corn Dulce Chico",
         "price": 17.5,
-        "cat": "Dulce"
+        "cat": "Dulce",
+        "img": "0031"
       },
       {
         "code": "2607",
         "name": "Pop Corn Dulce Mediana",
         "price": 18.5,
-        "cat": "Dulce"
+        "cat": "Dulce",
+        "img": "0032"
       },
       {
         "code": "2608",
         "name": "Pop Corn Dulce Grande",
         "price": 20.5,
-        "cat": "Dulce"
+        "cat": "Dulce",
+        "img": "0033"
       },
       {
         "code": "2609",
         "name": "Pop Corn Dulce Gigante",
         "price": 30.0,
-        "cat": "Dulce"
+        "cat": "Dulce",
+        "img": "0047"
       },
       {
         "code": "2085",
@@ -314,35 +322,55 @@ const PC = (() => {
       }
     ],
     slideSeconds: 8,
-    currency: 'S/'
+    currency: 'S/',
+    custom: { catalog: false, slides: false }   // true = lo edito el usuario en Configuracion (se conserva al actualizar el programa)
   };
+  let lastRaw = null, thanksTimer = 0;
   let state = load();
   const subs = [];
 
   function load() {
-    try { return Object.assign({}, DEFAULT, JSON.parse(localStorage.getItem(KEY) || '{}')); }
-    catch (e) { return structuredClone(DEFAULT); }
+    let st = {};
+    try { lastRaw = localStorage.getItem(KEY); st = JSON.parse(lastRaw || '{}') || {}; } catch (e) { st = {}; }
+    const s = Object.assign({}, structuredClone(DEFAULT), st);
+    s.custom = Object.assign({ catalog: false, slides: false }, st.custom);
+    // sin edicion del usuario se usa siempre el catalogo y la publicidad del programa
+    if (!s.custom.catalog) s.catalog = structuredClone(DEFAULT.catalog);
+    if (!s.custom.slides) { s.slides = structuredClone(DEFAULT.slides); s.slideSeconds = DEFAULT.slideSeconds; }
+    return s;
   }
   function save() {
-    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
+    const out = Object.assign({}, state);
+    if (!state.custom.catalog) delete out.catalog;
+    if (!state.custom.slides) { delete out.slides; delete out.slideSeconds; }
+    try { lastRaw = JSON.stringify(out); localStorage.setItem(KEY, lastRaw); } catch (e) {}
     if (ch) ch.postMessage('update');
     notify();
   }
   function notify() { subs.forEach(f => f(state)); }
-  function refresh() { state = load(); notify(); }
+  function refresh() {
+    let raw = null;
+    try { raw = localStorage.getItem(KEY); } catch (e) {}
+    if (raw === lastRaw) return;          // BroadcastChannel y 'storage' avisan los dos: se procesa una sola vez
+    state = load(); notify();
+  }
   if (ch) ch.onmessage = refresh;
   window.addEventListener('storage', e => { if (e.key === KEY) refresh(); });
 
-  const total = () => state.items.reduce((s, i) => s + i.price * i.qty, 0);
+  const cents = n => Math.round(n * 100);
+  const lineTotal = i => cents(i.price) * i.qty / 100;
+  const total = () => state.items.reduce((s, i) => s + cents(i.price) * i.qty, 0) / 100;
   const money = n => state.currency + ' ' + n.toFixed(2);
 
   return {
     get state() { return state; },
     subscribe(f) { subs.push(f); f(state); },
-    total, money,
+    total, lineTotal, money,
     update(fn) { fn(state); save(); },
     add(prod, qty = 1) {
+      clearTimeout(thanksTimer);
       this.update(s => {
+        if (s.status === 'gracias') s.items = [];      // venta nueva mientras se mostraba "Gracias"
         const it = s.items.find(i => i.code === prod.code && i.price === prod.price);
         if (it) it.qty += qty; else s.items.push({ ...prod, qty });
         s.status = 'venta';
@@ -355,14 +383,24 @@ const PC = (() => {
     },
     setQty(idx, d) {
       this.update(s => {
-        s.items[idx].qty += d;
-        if (s.items[idx].qty <= 0) s.items.splice(idx, 1);
+        const it = s.items[idx];
+        if (!it) return;
+        it.qty += d;
+        if (it.qty <= 0) s.items.splice(idx, 1);
         s.status = s.items.length ? 'venta' : 'idle';
       });
     },
     remove(idx) { this.update(s => { s.items.splice(idx, 1); s.status = s.items.length ? 'venta' : 'idle'; }); },
-    finish() { this.update(s => { s.status = 'gracias'; }); },
-    clear() { this.update(s => { s.items = []; s.status = 'idle'; }); },
+    // Muestra "Gracias" y limpia la venta despues de `ms`, salvo que se empiece otra venta mientras tanto
+    finish(ms = 6000) {
+      if (!state.items.length) return;
+      clearTimeout(thanksTimer);
+      this.update(s => { s.status = 'gracias'; });
+      thanksTimer = setTimeout(() => { if (state.status === 'gracias') this.clear(); }, ms);
+    },
+    clear() { clearTimeout(thanksTimer); this.update(s => { s.items = []; s.status = 'idle'; }); },
+    // Vuelve al catalogo y publicidad originales del programa
+    resetConfig() { this.update(s => { s.custom = { catalog: false, slides: false }; s.catalog = structuredClone(DEFAULT.catalog); s.slides = structuredClone(DEFAULT.slides); s.slideSeconds = DEFAULT.slideSeconds; }); },
     // Enlace con TumiSoft: el panel publica el codigo en el titulo de su ventana
     // (MTCMD|<seq>:<codigo>;...|) y MovieTime-Enlace.ahk lo lee y lo escribe en TumiSoft.
     link: (() => {
@@ -390,6 +428,6 @@ const PC = (() => {
         sendMany(codes) { codes = codes.map(clean).filter(Boolean); if (codes.length && getMode() !== 'off') { publish(codes); return true; } return false; }
       };
     })(),
-    reset() { localStorage.removeItem(KEY); refresh(); }
+    reset() { try { localStorage.removeItem(KEY); } catch (e) {} state = load(); notify(); }
   };
 })();

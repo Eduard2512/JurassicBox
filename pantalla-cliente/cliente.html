@@ -27,7 +27,7 @@ const tick=()=>{$('clock').textContent=new Date().toLocaleTimeString('es-PE',{ho
 /* ---------- Fotos de producto (con ilustración si no hay foto) ---------- */
 function photo(i){
   const ph=document.createElement('div');ph.className='ph';
-  const im=new Image();im.alt='';im.src='productos/'+i.code+'.webp';
+  const im=new Image();im.alt='';im.decoding='async';im.src='productos/'+(i.img||i.code)+'.webp';
   im.onerror=()=>{ph.innerHTML='<div class="nophoto"><img src="logo-movietime.svg" alt=""></div>'};ph.appendChild(im);return ph}
 
 /* ---------- Detalle + vitrina ---------- */
@@ -38,7 +38,7 @@ function render(s){
   // detalle
   let changed=null;items.forEach(i=>{const k=i.code+'|'+i.price;if((prevQty[k]||0)!==i.qty)changed=k});
   $('list').innerHTML=items.map(i=>{const k=i.code+'|'+i.price,isNew=k===changed;
-    return `<div class="line ${isNew?'new':'nan'}"><div class="qty">${i.qty}</div><div><div class="nm">${esc(i.name)}</div>${i.desc?`<div class="ds">${esc(i.desc)}</div>`:''}</div><div class="pr">${PC.money(i.price*i.qty)}${i.qty>1?`<small>${i.qty} × ${PC.money(i.price)}</small>`:''}</div></div>`}).join('');
+    return `<div class="line ${isNew?'new':'nan'}"><div class="qty">${i.qty}</div><div><div class="nm">${esc(i.name)}</div>${i.desc?`<div class="ds">${esc(i.desc)}</div>`:''}</div><div class="pr">${PC.money(PC.lineTotal(i))}${i.qty>1?`<small>${i.qty} × ${PC.money(i.price)}</small>`:''}</div></div>`}).join('');
   const L=$('list');L.classList.remove('compact');if(L.scrollHeight>L.clientHeight+2)L.classList.add('compact');
   L.scrollTop=L.scrollHeight;L.classList.toggle('scrolled',L.scrollTop>2);
   prevQty={};items.forEach(i=>prevQty[i.code+'|'+i.price]=i.qty);
@@ -74,7 +74,8 @@ function buildSlides(){
       c.insertAdjacentHTML('beforeend',`<b>${esc(p.name)}</b><em>${esc(p.desc||'')}</em><div class="pp">${PC.money(p.price)}</div>`);d.querySelector('.cg').appendChild(c)});
     root.insertBefore(d,$('prog'));nodes.push(d)}
   s.slides.filter(x=>x.image).forEach(x=>{const d=document.createElement('div');d.className='sl';
-    d.innerHTML=`<img src="${esc(x.image)}" alt="">`;
+    d.innerHTML=`<img src="${esc(x.image)}" alt="" decoding="async">`;
+    d.firstChild.onerror=()=>{d.remove();nodes=nodes.filter(n=>n!==d);if(cur>=nodes.length)cur=-1};
     if(x.title||x.sub)d.insertAdjacentHTML('beforeend',`<div style="position:absolute;left:0;right:0;bottom:8%;text-align:center;text-shadow:0 .2rem 1rem #000"><div style="font-size:5rem;font-weight:800">${esc(x.title||'')}</div><div style="font-size:2.4rem">${esc(x.sub||'')}</div></div>`);
     root.insertBefore(d,$('prog'));nodes.push(d)});
 }

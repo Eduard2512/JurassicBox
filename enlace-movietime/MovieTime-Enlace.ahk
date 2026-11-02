@@ -180,11 +180,21 @@ return
 
 ; ----- ABRIR VENTANAS -----
 AbrirPanel:
+if WinExist("Panel colaborador ahk_class Chrome_WidgetWin_1")
+{
+    Log("El panel ya estaba abierto")
+    return
+}
 url := UrlArchivo(RutaWeb . "\operador.html")
 AbrirApp(url, "--window-size=" . PanelAncho . "," . PanelAlto . " --window-position=20,20")
 return
 
 AbrirCliente:
+if WinExist("Pantalla cliente ahk_class Chrome_WidgetWin_1")
+{
+    Log("La pantalla del cliente ya estaba abierta")
+    return
+}
 url := UrlArchivo(RutaWeb . "\cliente.html")
 AbrirApp(url, "--window-position=" . PantallaClienteX . ",0 --start-fullscreen")
 return

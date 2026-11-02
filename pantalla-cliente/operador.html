@@ -8,12 +8,12 @@
   <div class="msg" id="msg"></div>
   <div class="row" id="tabs" style="flex-wrap:wrap"></div><div class="grid" id="grid"></div>
   <details><summary>Configuración (catálogo y publicidad)</summary>
-   <p style="color:var(--mut);margin:8px 0">Catálogo: <code>código;nombre;precio;categoría;contenido</code> por línea</p>
+   <p style="color:var(--mut);margin:8px 0">Catálogo: <code>código;nombre;precio;categoría;contenido;foto</code> por línea (contenido y foto son opcionales; foto = código de otra imagen de la carpeta productos)</p>
    <textarea id="cat"></textarea>
    <p style="color:var(--mut);margin:8px 0">Publicidad/cartelera: <code>título;subtítulo;ruta o url de imagen</code> (título y subtítulo pueden ir vacíos si la imagen ya trae texto)</p>
    <textarea id="sl"></textarea>
    <div class="row" style="margin-top:8px"><label>Seg. por slide <input id="ss" type="number" style="width:80px"></label></div>
-   <button id="saveCfg">Guardar</button> <button class="sec" id="openCl">Abrir pantalla del cliente</button>
+   <button id="saveCfg">Guardar</button> <button class="sec" id="resetCfg">Restaurar originales</button> <button class="sec" id="openCl">Abrir pantalla del cliente</button> <span id="cfgMsg" style="color:var(--ok);font-weight:700"></span>
   </details>
  </section>
  <section class="panel">
@@ -33,16 +33,19 @@
 <script src="shared.js"></script>
 <script>
 const $=id=>document.getElementById(id);
-let tab='';
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let tab='',gridKey='';
 const sent={};   // codigo -> unidades que ya se enviaron a TumiSoft en esta venta
 function sendLive(code){const ok=PC.link.send(code);if(ok)sent[code]=(sent[code]||0)+1;return ok}
 function pending(){const codes=[],items=[];PC.state.items.forEach(i=>{const n=Math.max(0,i.qty-(sent[i.code]||0));if(n>0){items.push([i.code,n]);for(let k=0;k<n;k++)codes.push(i.code)}});return{codes,items}}
 function render(s){
   const cats=[...new Set(s.catalog.map(p=>p.cat||'Otros'))];
   if(tab&&!cats.includes(tab))tab='';
-  $('tabs').innerHTML=['Todos',...cats].map(c=>`<button class="${(c==='Todos'&&!tab)||c===tab?'':'sec'}" data-t="${c}">${c}</button>`).join('');
-  $('grid').innerHTML=s.catalog.filter(p=>!tab||(p.cat||'Otros')===tab).map(p=>`<button class="prod" data-c="${p.code}">${p.name}<small>${p.code}</small><b>${PC.money(p.price)}</b></button>`).join('');
-  $('body').innerHTML=s.items.map((i,n)=>`<tr><td>${i.name}</td><td><button class="sec" data-m="${n}">−</button> ${i.qty} <button class="sec" data-p="${n}">+</button></td><td>${PC.money(i.price*i.qty)}</td><td><button class="bad" data-x="${n}">✕</button></td></tr>`).join('');
+  const key=tab+'|'+s.catalog.map(p=>p.code+p.name+p.price+(p.cat||'')).join('~');
+  if(key!==gridKey){gridKey=key;
+    $('tabs').innerHTML=['Todos',...cats].map(c=>`<button class="${(c==='Todos'&&!tab)||c===tab?'':'sec'}" data-t="${esc(c)}">${esc(c)}</button>`).join('');
+    $('grid').innerHTML=s.catalog.filter(p=>!tab||(p.cat||'Otros')===tab).map(p=>`<button class="prod" data-c="${esc(p.code)}">${esc(p.name)}<small>${esc(p.code)}</small><b>${PC.money(p.price)}</b></button>`).join('')}
+  $('body').innerHTML=s.items.map((i,n)=>`<tr><td>${esc(i.name)}</td><td><button class="sec" data-m="${n}">−</button> ${i.qty} <button class="sec" data-p="${n}">+</button></td><td>${PC.money(PC.lineTotal(i))}</td><td><button class="bad" data-x="${n}">✕</button></td></tr>`).join('');
   $('tot').textContent='Total: '+PC.money(PC.total());
   if(!s.items.length)for(const k in sent)delete sent[k];
   const p=pending(),end=PC.link.mode==='end';
@@ -51,7 +54,7 @@ function render(s){
   $('sendTumi').textContent=p.codes.length?'Enviar a TumiSoft ('+p.codes.length+' producto'+(p.codes.length>1?'s':'')+')':(s.items.length?'✔ Todo enviado a TumiSoft':'Enviar a TumiSoft');
 }
 PC.subscribe(render);
-$('tabs').onclick=e=>{const b=e.target.closest('[data-t]');if(b){tab=b.dataset.t==='Todos'?'':b.dataset.t;render(PC.state)}};
+$('tabs').onclick=e=>{const b=e.target.closest('[data-t]');if(b){tab=b.dataset.t==='Todos'?'':b.dataset.t;gridKey='';render(PC.state)}};
 $('grid').onclick=e=>{const b=e.target.closest('[data-c]');if(b){PC.addByCode(b.dataset.c);sendLive(b.dataset.c);$('code').focus()}};
 $('body').onclick=e=>{const t=e.target;
   if(t.dataset.m)PC.setQty(+t.dataset.m,-1);if(t.dataset.p){const it=PC.state.items[+t.dataset.p];PC.setQty(+t.dataset.p,1);if(it)sendLive(it.code)}if(t.dataset.x)PC.remove(+t.dataset.x)};
@@ -63,16 +66,22 @@ document.querySelectorAll('input[name=lm]').forEach(r=>{r.checked=r.value===PC.l
 $('sendTumi').onclick=()=>{const p=pending();if(!p.codes.length)return;
   if(PC.link.sendMany(p.codes)){p.items.forEach(([c,n])=>sent[c]=(sent[c]||0)+n);$('msg').textContent='Enviando '+p.codes.length+' producto(s) a TumiSoft… no muevas el mouse ni el teclado.';render(PC.state)}};
 $('addBtn').onclick=addCode;$('code').onkeydown=e=>{if(e.key==='Enter')addCode()};
-$('fin').onclick=()=>{if(PC.state.items.length){PC.finish();setTimeout(()=>PC.clear(),6000)}};
+$('fin').onclick=()=>PC.finish();
 $('clr').onclick=()=>PC.clear();
 $('openCl').onclick=()=>window.open('cliente.html','pantalla_cliente','width=1280,height=720');
-const s0=PC.state;
-$('cat').value=s0.catalog.map(p=>[p.code,p.name,p.price,p.cat||'',p.desc||''].join(';')).join('\n');
-$('sl').value=s0.slides.map(x=>[x.title,x.sub,x.image].join(';')).join('\n');
-$('ss').value=s0.slideSeconds;
-$('saveCfg').onclick=()=>PC.update(s=>{
-  s.catalog=$('cat').value.split('\n').map(l=>l.split(';')).filter(a=>a[0]&&a[1]).map(a=>({code:a[0].trim(),name:a[1].trim(),price:parseFloat(a[2])||0,cat:(a[3]||'').trim(),desc:(a[4]||'').trim()}));
-  s.slides=$('sl').value.split('\n').map(l=>l.split(';')).filter(a=>a[0]).map(a=>({title:a[0].trim(),sub:(a[1]||'').trim(),image:(a[2]||'').trim()}));
-  s.slideSeconds=+$('ss').value||7;
-});
-</script></body></html>
+function loadCfg(){const s0=PC.state;
+  $('cat').value=s0.catalog.map(p=>[p.code,p.name,p.price,p.cat||'',p.desc||'',p.img||''].join(';')).join('\n');
+  $('sl').value=s0.slides.map(x=>[x.title,x.sub,x.image].join(';')).join('\n');
+  $('ss').value=s0.slideSeconds}
+loadCfg();
+$('saveCfg').onclick=()=>{
+  const cat=$('cat').value.split('\n').map(l=>l.split(';').map(x=>x.trim())).filter(a=>a[0]&&a[1])
+    .map(a=>{const p={code:a[0],name:a[1],price:parseFloat(String(a[2]).replace(',','.'))||0,cat:a[3]||''};if(a[4])p.desc=a[4];if(a[5])p.img=a[5];return p});
+  const sl=$('sl').value.split('\n').map(l=>l.split(';').map(x=>x.trim())).filter(a=>a[2]||a[0])   // vale con imagen o con texto
+    .map(a=>({title:a[0]||'',sub:a[1]||'',image:a[2]||''}));
+  if(!cat.length){$('cfgMsg').textContent='';$('msg').textContent='El catálogo no puede quedar vacío.';return}
+  PC.update(s=>{s.catalog=cat;s.slides=sl;s.slideSeconds=Math.max(2,+$('ss').value||8);s.custom={catalog:true,slides:true}});
+  gridKey='';render(PC.state);$('msg').textContent='';$('cfgMsg').textContent='✔ Guardado'};
+$('resetCfg').onclick=()=>{if(confirm('¿Volver al catálogo y la publicidad originales del programa? Se pierden tus cambios en Configuración.')){PC.resetConfig();loadCfg();gridKey='';render(PC.state);$('cfgMsg').textContent='✔ Restaurado'}};
+</script>
+</body></html>
