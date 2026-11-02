@@ -77,16 +77,21 @@ body{font-family:Montserrat,"Segoe UI",system-ui,sans-serif;background:#000;colo
 .ads .sl.on img{animation:kb var(--dur,8s) ease-out forwards}
 .ads .prog{position:absolute;left:0;bottom:0;height:.45rem;background:linear-gradient(90deg,var(--red),var(--gold));width:0;z-index:2}
 .ads .prog.run{animation:prog var(--dur,8s) linear forwards}
-/* Slide de combos (generado) */
-.sl.combos{background:radial-gradient(60rem 40rem at 80% 0,#4a55ff66,transparent 60%),linear-gradient(165deg,#1a1fe0,#0f1198 50%,#060844);display:flex;flex-direction:column;padding:4rem 5rem}
-.sl.combos h2{font-size:5.4rem;font-weight:800;text-transform:uppercase;background:linear-gradient(#fff,var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent;line-height:1}
-.sl.combos h3{font-size:1.9rem;font-weight:700;letter-spacing:.3em;color:#fff;opacity:.85;margin:.8rem 0 2rem}
-.cg{flex:1;display:grid;grid-template-columns:repeat(4,1fr);gap:2rem;min-height:0}
-.cc{background:linear-gradient(180deg,#ffffff2e,#ffffff10);border:.1rem solid #ffffff3d;border-radius:2rem;display:flex;flex-direction:column;align-items:center;padding:1.6rem;min-height:0}
+/* Slide de combos (generado): 2 filas de 4 */
+.sl.combos{background:radial-gradient(60rem 40rem at 80% 0,#4a55ff66,transparent 60%),linear-gradient(165deg,#1a1fe0,#0f1198 50%,#060844);display:flex;flex-direction:column;padding:2.2rem 3.5rem 2.4rem;gap:1rem}
+.sl.combos .ch{display:flex;align-items:center;gap:2.2rem}
+.sl.combos h2{font-size:4.4rem;font-weight:800;text-transform:uppercase;background:linear-gradient(#fff,var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent;line-height:1}
+.sl.combos .logo img{height:4.6rem}
+.crow{flex:1;min-height:0;display:flex;flex-direction:column;gap:.6rem}
+.rl{align-self:flex-start;background:var(--gold);color:#16163a;font-weight:800;font-size:1.4rem;letter-spacing:.22em;text-transform:uppercase;padding:.25rem 1.4rem;border-radius:99rem}
+.cg{flex:1;display:grid;grid-template-columns:repeat(4,1fr);gap:1.4rem;min-height:0}
+.cc{background:linear-gradient(180deg,#ffffff2e,#ffffff10);border:.1rem solid #ffffff3d;border-radius:1.6rem;display:flex;flex-direction:column;align-items:center;padding:.8rem 1rem 1rem;min-height:0}
 .cc .ph{flex:1;min-height:0;width:100%;display:flex;align-items:center;justify-content:center}
-.cc img{max-width:100%;max-height:100%;object-fit:contain;filter:drop-shadow(0 1rem 1.2rem #0007);animation:none!important;transform:none!important}
-.cc b{font-size:2.2rem;font-weight:800;margin-top:1rem}.cc em{font-style:normal;font-size:1.2rem;opacity:.8;text-align:center;margin-top:.3rem;min-height:3.4rem}
-.cc .pp{margin-top:.8rem;background:var(--gold);color:#16163a;font-weight:800;font-size:2.8rem;padding:.2rem 1.6rem;border-radius:99rem}
+.cc img{max-width:100%;max-height:100%;object-fit:contain;filter:drop-shadow(0 .8rem 1rem #0007);animation:none!important;transform:none!important}
+.cc b{font-size:1.75rem;font-weight:800;margin-top:.4rem;text-align:center;line-height:1.1}
+.cc em{font-style:normal;font-size:1.05rem;opacity:.85;text-align:center;margin-top:.2rem;min-height:2.6rem;line-height:1.25}
+.cc .pp{margin-top:.4rem;background:var(--gold);color:#16163a;font-weight:800;font-size:2.1rem;padding:.1rem 1.4rem;border-radius:99rem}
+.ads.paused .sl.on img,.ads.paused .prog{animation-play-state:paused}
 
 /* Gracias */
 .thanks{position:fixed;inset:0;z-index:4;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;

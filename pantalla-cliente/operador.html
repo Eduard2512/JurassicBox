@@ -20,6 +20,14 @@
   <div class="cv" id="cv">
    <div class="cvh"><b>Lo que ve el cliente</b><button class="sec" id="cvToggle" title="Mostrar u ocultar la miniatura"></button></div>
    <div class="cvbox" id="cvbox"><iframe id="cvf" title="Vista del cliente" tabindex="-1"></iframe></div>
+   <div class="adc" id="adc">
+    <span class="adl">Publicidad</span>
+    <button class="sec" id="adPrev" title="Imagen anterior">⏮</button>
+    <button class="sec" id="adToggle">⏸ Pausar</button>
+    <button class="sec" id="adNext" title="Imagen siguiente">⏭</button>
+    <span class="dots" id="adDots" title="Clic en un punto: muestra esa imagen y la deja fija"></span>
+    <small id="adNote"></small>
+   </div>
   </div>
   <h2>Venta actual</h2>
   <div class="lnk"><b>Enviar a TumiSoft:</b>
@@ -80,6 +88,25 @@ function scaleCv(){const b=$('cvbox');if(b.clientWidth)$('cvf').style.transform=
 new ResizeObserver(scaleCv).observe($('cvbox'));
 $('cvToggle').onclick=()=>{try{localStorage.setItem('pc_cv_on',cvOn()?'0':'1')}catch(e){}applyCv()};
 applyCv();
+// Control de la publicidad de la pantalla del cliente (canal 'pc_ads': la pantalla real manda, el panel la dirige)
+const adCh='BroadcastChannel' in window?new BroadcastChannel('pc_ads'):null;
+let adSt=null,adSeen=0;
+const adCmd=(cmd,idx)=>adCh&&adCh.postMessage({t:'cmd',cmd,idx});
+function renderAd(){
+  const alive=adSt&&Date.now()-adSeen<7000,run=alive&&adSt.running;
+  ['adPrev','adToggle','adNext'].forEach(i=>$(i).disabled=!alive);
+  $('adToggle').textContent=alive&&adSt.paused?'▶ Continuar':'⏸ Pausar';
+  $('adToggle').className=alive&&adSt.paused?'ok':'sec';
+  const n=alive?adSt.total:0;
+  if($('adDots').children.length!==n)$('adDots').innerHTML=Array.from({length:n},(_,i)=>`<button data-i="${i}" title="Imagen ${i+1}"></button>`).join('');
+  [...$('adDots').children].forEach((b,i)=>{b.className=alive&&i===adSt.idx?'on':'';b.disabled=!run});
+  $('adNote').textContent=!alive?'La pantalla del cliente está cerrada.':adSt.paused?(run?'⏸ En pausa en la imagen '+(adSt.idx+1)+' de '+n:'⏸ En pausa (se mantiene al volver a la publicidad)'):(run?'':'Hay una venta en pantalla: la publicidad vuelve al terminar.');
+  $('adNote').style.color=alive&&adSt.paused?'var(--red)':'var(--mut)';
+}
+if(adCh){adCh.onmessage=e=>{if(e.data&&e.data.t==='state'){adSt=e.data;adSeen=Date.now();renderAd()}};adCh.postMessage({t:'hello'});setInterval(renderAd,1000)}
+$('adToggle').onclick=()=>adCmd('toggle');$('adPrev').onclick=()=>adCmd('prev');$('adNext').onclick=()=>adCmd('next');
+$('adDots').onclick=e=>{const b=e.target.closest('[data-i]');if(b)adCmd('goto',+b.dataset.i)};
+renderAd();
 $('openCl').onclick=()=>window.open('cliente.html','pantalla_cliente','width=1280,height=720');
 function loadCfg(){const s0=PC.state;
   $('cat').value=s0.catalog.map(p=>[p.code,p.name,p.price,p.cat||'',p.desc||'',p.img||''].join(';')).join('\n');

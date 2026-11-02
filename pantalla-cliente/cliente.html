@@ -67,33 +67,83 @@ function render(s){
 }
 
 /* ---------- Publicidad a pantalla completa ---------- */
-let slideTimer=0,cur=-1,adsSig='',nodes=[];
+// La pantalla real manda; la miniatura del panel (?mini=1) solo la sigue. El panel del colaborador controla por el canal 'pc_ads'.
+let nodes=[],cur=0,paused=false,adsSig='',timer=0,running=false,lastMaster=0;
+const adCh='BroadcastChannel' in window?new BroadcastChannel('pc_ads'):null;
+const masterAlive=()=>Date.now()-lastMaster<6000;
+const comboLists=s=>({
+  sal:s.catalog.filter(p=>/^combos salada/i.test(p.cat||'')&&!/hot dog/i.test(p.name)).slice(0,4),   // combos salados (sin las versiones con hot dog)
+  dul:s.catalog.filter(p=>/^combos dulce/i.test(p.cat||'')).slice(0,4)});
+function publishAd(){if(MINI||!adCh)return;adCh.postMessage({t:'state',idx:cur,paused,total:nodes.length,running})}
 function buildSlides(){
   const s=PC.state,root=$('ads');[...root.querySelectorAll('.sl')].forEach(e=>e.remove());nodes=[];
-  const combos=s.catalog.filter(p=>/^combos salada/i.test(p.cat||'')&&!/hot dog/i.test(p.name)).slice(0,4);
-  if(combos.length){const d=document.createElement('div');d.className='sl combos';
-    d.innerHTML=`<span class="logo" style="align-self:flex-start;margin-bottom:2rem"><img src="logo-movietime.svg" alt=""></span><h2>Combos Movie Time</h2><h3>Pídelos en caja</h3><div class="cg"></div>`;
-    combos.forEach(p=>{const c=document.createElement('div');c.className='cc';c.appendChild(photo(p));
-      c.insertAdjacentHTML('beforeend',`<b>${esc(p.name)}</b><em>${esc(p.desc||'')}</em><div class="pp">${PC.money(p.price)}</div>`);d.querySelector('.cg').appendChild(c)});
+  const {sal,dul}=comboLists(s);
+  if(sal.length||dul.length){const d=document.createElement('div');d.className='sl combos';
+    d.innerHTML=`<div class="ch"><span class="logo"><img src="logo-movietime.svg" alt=""></span><h2>Combos Movie Time</h2></div>`;
+    [['Combos salados',sal],['Combos dulces',dul]].forEach(([label,list])=>{if(!list.length)return;
+      const row=document.createElement('div');row.className='crow';row.innerHTML=`<div class="rl">${label}</div><div class="cg"></div>`;
+      list.forEach(p=>{const cc=document.createElement('div');cc.className='cc';cc.appendChild(photo(p));
+        cc.insertAdjacentHTML('beforeend',`<b>${esc(p.name)}</b><em>${esc(p.desc||'')}</em><div class="pp">${PC.money(p.price)}</div>`);row.querySelector('.cg').appendChild(cc)});
+      d.appendChild(row)});
     root.insertBefore(d,$('prog'));nodes.push(d)}
   s.slides.filter(x=>x.image).forEach(x=>{const d=document.createElement('div');d.className='sl';
     d.innerHTML=`<img src="${esc(x.image)}" alt="" decoding="async">`;
-    d.firstChild.onerror=()=>{d.remove();nodes=nodes.filter(n=>n!==d);if(cur>=nodes.length)cur=-1};
+    d.firstChild.onerror=()=>{d.remove();nodes=nodes.filter(n=>n!==d);if(cur>=nodes.length)cur=0;publishAd()};
     if(x.title||x.sub)d.insertAdjacentHTML('beforeend',`<div style="position:absolute;left:0;right:0;bottom:8%;text-align:center;text-shadow:0 .2rem 1rem #000"><div style="font-size:5rem;font-weight:800">${esc(x.title||'')}</div><div style="font-size:2.4rem">${esc(x.sub||'')}</div></div>`);
     root.insertBefore(d,$('prog'));nodes.push(d)});
 }
-function next(){
-  if(!nodes.length)return;const dur=PC.state.slideSeconds;
-  nodes.forEach(n=>n.classList.remove('on'));cur=(cur+1)%nodes.length;
+function showSlide(i,silent){
+  if(!nodes.length)return;
+  nodes.forEach(n=>n.classList.remove('on'));cur=((i%nodes.length)+nodes.length)%nodes.length;
   const n=nodes[cur];void n.offsetWidth;n.classList.add('on');
-  const root=$('ads'),p=$('prog');root.style.setProperty('--dur',dur+'s');p.classList.remove('run');void p.offsetWidth;p.classList.add('run');
+  const root=$('ads'),p=$('prog');root.style.setProperty('--dur',PC.state.slideSeconds+'s');
+  p.classList.remove('run');void p.offsetWidth;p.classList.add('run');     // si esta en pausa, la barra queda congelada por CSS
+  if(!silent)publishAd();
+}
+function schedule(){
+  clearTimeout(timer);timer=0;
+  if(!running||paused||!nodes.length)return;
+  if(MINI&&masterAlive())return;                              // la miniatura sigue a la pantalla real
+  timer=setTimeout(()=>{showSlide(cur+1);schedule()},PC.state.slideSeconds*1000);
+}
+function setPaused(v){
+  paused=!!v;$('ads').classList.toggle('paused',paused);
+  if(!paused&&running){const p=$('prog');p.classList.remove('run');void p.offsetWidth;p.classList.add('run')}
+  schedule();publishAd();
 }
 function checkAds(){
-  const s=PC.state,on=s.status==='idle',root=$('ads');
+  const s=PC.state,on=s.status==='idle',root=$('ads'),cl=comboLists(s);
   root.classList.toggle('hide',!on);
-  if(on){const sig=JSON.stringify([s.slides,s.catalog.length,s.slideSeconds]);
-    if(sig!==adsSig||!slideTimer){adsSig=sig;clearInterval(slideTimer);buildSlides();cur=-1;next();slideTimer=setInterval(next,s.slideSeconds*1000)}}
-  else if(slideTimer){clearInterval(slideTimer);slideTimer=0;adsSig=''}
+  if(on){
+    const sig=JSON.stringify([s.slides,cl.sal.concat(cl.dul).map(p=>p.code+p.price+p.name),s.slideSeconds]);
+    if(sig!==adsSig||!nodes.length){adsSig=sig;buildSlides();if(cur>=nodes.length)cur=0}
+    if(!running){running=true;showSlide(paused?cur:0)}   // pausada: vuelve a la misma imagen; si no, empieza de nuevo
+    schedule();
+  }else if(running){running=false;clearTimeout(timer);timer=0;publishAd()}
 }
+function doCmd(m){
+  if(!running&&m.cmd!=='play'&&m.cmd!=='pause'&&m.cmd!=='toggle')return;
+  if(m.cmd==='toggle')setPaused(!paused);
+  else if(m.cmd==='pause')setPaused(true);
+  else if(m.cmd==='play')setPaused(false);
+  else if(m.cmd==='next'){showSlide(cur+1);schedule()}
+  else if(m.cmd==='prev'){showSlide(cur-1);schedule()}
+  else if(m.cmd==='goto'&&nodes.length){showSlide(+m.idx||0);setPaused(true)}    // elegir una imagen la deja fija
+}
+if(adCh)adCh.onmessage=e=>{const m=e.data||{};
+  if(MINI){
+    if(m.t!=='state')return;
+    lastMaster=Date.now();
+    if(m.paused!==paused){paused=m.paused;$('ads').classList.toggle('paused',paused)}
+    if(running&&nodes.length&&m.idx!==cur)showSlide(m.idx,true);
+    schedule();
+  }else if(m.t==='hello')publishAd();
+  else if(m.t==='cmd')doCmd(m)};
+if(!MINI){
+  setInterval(publishAd,3000);                                  // el panel y la miniatura se mantienen sincronizados
+  document.addEventListener('keydown',e=>{                       // teclado en la pantalla del cliente: espacio = pausa, flechas = cambiar
+    if(e.code==='Space'){e.preventDefault();doCmd({cmd:'toggle'})}
+    else if(e.code==='ArrowRight')doCmd({cmd:'next'});else if(e.code==='ArrowLeft')doCmd({cmd:'prev'})});
+}else if(adCh)adCh.postMessage({t:'hello'});
 PC.subscribe(render);
 </script></body></html>

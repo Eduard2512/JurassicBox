@@ -1,7 +1,9 @@
 # Pantalla del cliente (segundo monitor) · Movie Time
 
 Dos paneles web (diseñados para 1920x1080 en la pantalla del cliente):
-- `operador.html`: panel del colaborador (agrega productos, finaliza la venta). Arriba a la derecha muestra una **miniatura de lo que ve el cliente** (botón Ocultar/Mostrar).
+- `operador.html`: panel del colaborador (agrega productos, finaliza la venta). Arriba a la derecha muestra una **miniatura de lo que ve el cliente** (botón Ocultar/Mostrar) con los controles de la publicidad:
+  ⏸ Pausar / ▶ Continuar, ⏮ ⏭ cambiar de imagen y puntos para elegir una imagen (queda fija). En la pantalla del cliente también: Espacio = pausa, flechas = cambiar.
+  La pausa se mantiene aunque haya una venta: al terminar vuelve a la misma imagen.
 - `cliente.html`: pantalla del cliente (lista, fotos, total, publicidad). Doble clic = pantalla completa.
 
 Ambas ventanas deben abrirse en el mismo navegador (Chrome/Edge). Funciona sin internet y sin TumiSoft.
