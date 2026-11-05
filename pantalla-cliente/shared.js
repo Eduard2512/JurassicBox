@@ -1,7 +1,7 @@
 // Estado compartido entre el panel del colaborador y la pantalla del cliente.
 // Se sincroniza con BroadcastChannel + localStorage (misma PC, sin internet).
 const PC = (() => {
-  const KEY = 'pc_state_v7';
+  const KEY = 'pc_state_v8';
   const ch = 'BroadcastChannel' in window ? new BroadcastChannel('pc_channel') : null;
   const DEFAULT = {
     items: [],            // {code,name,price,qty}
@@ -317,6 +317,17 @@ const PC = (() => {
         "sub": "",
         "image": "publicidad/stray-kids.jpg",
         "until": "2026-11-08"
+      },
+      {
+        "title": "",
+        "sub": "",
+        "image": "publicidad/godzilla.jpg",
+        "until": "2026-12-31"
+      },
+      {
+        "title": "",
+        "sub": "",
+        "image": "publicidad/street-fighter.jpg"
       },
       {
         "title": "",

@@ -75,7 +75,7 @@ body{font-family:Montserrat,"Segoe UI",system-ui,sans-serif;background:#000;colo
 .ads .sl.on{opacity:1;visibility:visible;transition-delay:0s}
 .ads .sl>img{width:100%;height:100%;object-fit:cover;display:block;transform:scale(1)}
 .ads .sl.on>img{animation:kb var(--dur,8s) ease-out forwards;will-change:transform}
-.ads .prog{position:absolute;left:0;bottom:0;height:.45rem;background:linear-gradient(90deg,var(--red),var(--gold));width:0;z-index:2}
+.ads .prog{position:absolute;left:0;bottom:0;height:.45rem;background:linear-gradient(90deg,var(--red),var(--gold));width:100%;transform:scaleX(0);transform-origin:0 50%;z-index:2}   /* se anima con transform: no recalcula el diseno en cada cuadro */
 .ads .prog.run{animation:prog var(--dur,8s) linear forwards}
 /* Slide de combos (generado): 2 filas de 4 */
 .sl.combos{background:radial-gradient(60rem 40rem at 80% 0,#4a55ff66,transparent 60%),linear-gradient(165deg,#1a1fe0,#0f1198 50%,#060844);display:flex;flex-direction:column;padding:2.2rem 3.5rem 2.4rem;gap:1rem}
@@ -106,7 +106,7 @@ body{font-family:Montserrat,"Segoe UI",system-ui,sans-serif;background:#000;colo
 @keyframes pop{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:none}}
 @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-.8rem)}}
 @keyframes kb{from{transform:scale(1)}to{transform:scale(1.05)}}
-@keyframes prog{from{width:0}to{width:100%}}
+@keyframes prog{from{transform:scaleX(0)}to{transform:scaleX(1)}}
 @keyframes draw{to{stroke-dashoffset:0}}
 @keyframes bump{50%{transform:scale(1.06)}}
 .show.n3 .tile:first-child{grid-column:span 2}

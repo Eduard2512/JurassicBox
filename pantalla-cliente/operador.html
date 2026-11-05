@@ -75,7 +75,7 @@ $('body').onclick=e=>{const t=e.target;
   if(t.dataset.m)PC.setQty(+t.dataset.m,-1);if(t.dataset.p){const it=PC.state.items[+t.dataset.p];PC.setQty(+t.dataset.p,1);if(it)sendLive(it.code)}if(t.dataset.x)PC.remove(+t.dataset.x)};
 function addCode(){const v=$('code').value.trim();if(!v)return;
   const ok=PC.addByCode(v);const sent1=sendLive(v);
-  $('msg').textContent=ok?'':(sent1?'No está en el catálogo de la pantalla (se envió a TumiSoft): '+v:'Código no encontrado: '+v);
+  $('msg').textContent=ok?(sinCodigo(v)&&PC.link.mode==='live'?'Este producto aún no tiene código de TumiSoft: agrégalo a mano en TumiSoft.':''):(sent1?'No está en el catálogo de la pantalla (se envió a TumiSoft): '+v:'Código no encontrado: '+v);
   $('code').value='';$('code').focus()}
 document.querySelectorAll('input[name=lm]').forEach(r=>{r.checked=r.value===PC.link.mode;r.onchange=()=>{if(r.checked){PC.link.mode=r.value;$('msg').textContent='';render(PC.state)}}});
 $('sendTumi').onclick=()=>{const p=pending();if(!p.codes.length)return;
