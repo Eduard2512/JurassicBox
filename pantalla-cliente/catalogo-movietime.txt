@@ -39,3 +39,5 @@
 0004;Travesuras;5.00;Golosinas Y Otros;;
 2823;Super Pizza Personal;17.50;Sandwich Y Embutidos;;
 1677;Hot Dog;11.50;Sandwich Y Embutidos;;
+PEND-CYBER1;Combo Cyber;39.50;Promos;1 Pop corn salada gigante + 2 gaseosas chicas;
+PEND-CYBER2;Promo Cyber: 2 Hot Dogs;26.90;Promos;;1677

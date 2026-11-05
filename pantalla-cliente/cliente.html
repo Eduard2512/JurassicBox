@@ -71,6 +71,9 @@ function render(s){
 let nodes=[],cur=0,paused=false,adsSig='',timer=0,running=false,lastMaster=0;
 const adCh='BroadcastChannel' in window?new BroadcastChannel('pc_ads'):null;
 const masterAlive=()=>Date.now()-lastMaster<6000;
+const dayKey=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+let adsDay=dayKey();
+const vigente=x=>!(x.until&&dayKey()>x.until);       // "until" = ultimo dia (inclusive) en que se muestra el banner
 const comboLists=s=>({
   sal:s.catalog.filter(p=>/^combos salada/i.test(p.cat||'')&&!/hot dog/i.test(p.name)).slice(0,4),   // combos salados (sin las versiones con hot dog)
   dul:s.catalog.filter(p=>/^combos dulce/i.test(p.cat||'')).slice(0,4)});
@@ -86,7 +89,7 @@ function buildSlides(){
         cc.insertAdjacentHTML('beforeend',`<b>${esc(p.name)}</b><em>${esc(p.desc||'')}</em><div class="pp">${PC.money(p.price)}</div>`);row.querySelector('.cg').appendChild(cc)});
       d.appendChild(row)});
     root.insertBefore(d,$('prog'));nodes.push(d)}
-  s.slides.filter(x=>x.image).forEach(x=>{const d=document.createElement('div');d.className='sl';
+  s.slides.filter(x=>x.image&&vigente(x)).forEach(x=>{const d=document.createElement('div');d.className='sl';
     d.innerHTML='<img alt="" decoding="async">';d._src=x.image;     // la imagen se carga solo cuando le toca (ahorra memoria)
     d.firstChild.onerror=()=>{d.remove();nodes=nodes.filter(n=>n!==d);if(cur>=nodes.length)cur=0;publishAd()};
     if(x.title||x.sub)d.insertAdjacentHTML('beforeend',`<div style="position:absolute;left:0;right:0;bottom:8%;text-align:center;text-shadow:0 .2rem 1rem #000"><div style="font-size:5rem;font-weight:800">${esc(x.title||'')}</div><div style="font-size:2.4rem">${esc(x.sub||'')}</div></div>`);
@@ -109,7 +112,7 @@ function schedule(){
   clearTimeout(timer);timer=0;
   if(!running||paused||!nodes.length)return;
   if(MINI&&masterAlive())return;                              // la miniatura sigue a la pantalla real
-  timer=setTimeout(()=>{showSlide(cur+1);schedule()},PC.state.slideSeconds*1000);
+  timer=setTimeout(()=>{if(dayKey()!==adsDay){checkAds();return}showSlide(cur+1);schedule()},PC.state.slideSeconds*1000);   // pasada la medianoche se quitan los banners vencidos
 }
 function setPaused(v){
   paused=!!v;$('ads').classList.toggle('paused',paused);
@@ -120,9 +123,11 @@ function checkAds(){
   const s=PC.state,on=s.status==='idle',root=$('ads');
   root.classList.toggle('hide',!on);
   if(on){
-    const cl=comboLists(s),sig=JSON.stringify([s.slides,cl.sal.concat(cl.dul).map(p=>p.code+p.price+p.name),s.slideSeconds]);
-    if(sig!==adsSig||!nodes.length){adsSig=sig;buildSlides();if(cur>=nodes.length)cur=0}
-    if(!running){running=true;showSlide(paused?cur:0)}   // pausada: vuelve a la misma imagen; si no, empieza de nuevo
+    const cl=comboLists(s),sig=JSON.stringify([dayKey(),s.slides,cl.sal.concat(cl.dul).map(p=>p.code+p.price+p.name),s.slideSeconds]);
+    const rebuilt=sig!==adsSig||!nodes.length;
+    if(rebuilt){adsSig=sig;adsDay=dayKey();buildSlides();if(cur>=nodes.length)cur=0}
+    if(!running){running=true;showSlide(paused?cur:0)}
+    else if(rebuilt)showSlide(cur,true);          // cambio la publicidad con la pantalla en marcha: se muestra de inmediato   // pausada: vuelve a la misma imagen; si no, empieza de nuevo
     schedule();
   }else if(running){running=false;clearTimeout(timer);timer=0;publishAd()}
 }

@@ -19,4 +19,7 @@ hay que quitarlo también en TumiSoft. El panel debe estar abierto y no llevar "
   `catalogo-movietime.txt` tiene la lista lista para pegar). Lo que guardas ahí se conserva al actualizar el programa;
   **Restaurar originales** vuelve a la lista que trae el programa.
 - Fotos: `productos/<codigo>.webp` (sin foto se muestra el logo). El campo `foto` permite reutilizar la imagen de otro código (p. ej. el pop corn dulce usa la del salado).
-- Publicidad: imágenes 1920x1080 en `publicidad/`, agregadas en *Configuración*.
+- Publicidad: imágenes 1920x1080 en `publicidad/`, agregadas en *Configuración* (`título;subtítulo;imagen;hasta`).
+  El campo **hasta** (`AAAA-MM-DD`, opcional) es el último día que se muestra el banner: después se quita solo (útil para promos y preventas).
+- Productos con código `PEND-...` vienen de la web de Movie Time pero aún no tienen código de TumiSoft: se ven en la pantalla del cliente
+  y **no se envían** a TumiSoft. Cuando sepas el código, cámbialo en *Configuración*.

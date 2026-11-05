@@ -10,7 +10,7 @@
   <details><summary>Configuración (catálogo y publicidad)</summary>
    <p style="color:var(--mut);margin:8px 0">Catálogo: <code>código;nombre;precio;categoría;contenido;foto</code> por línea (contenido y foto son opcionales; foto = código de otra imagen de la carpeta productos)</p>
    <textarea id="cat"></textarea>
-   <p style="color:var(--mut);margin:8px 0">Publicidad/cartelera: <code>título;subtítulo;ruta o url de imagen</code> (título y subtítulo pueden ir vacíos si la imagen ya trae texto)</p>
+   <p style="color:var(--mut);margin:8px 0">Publicidad/cartelera: <code>título;subtítulo;imagen;hasta</code> — título y subtítulo pueden ir vacíos si la imagen ya trae texto; <b>hasta</b> (opcional, <code>AAAA-MM-DD</code>) es el último día en que se muestra, después se quita sola</p>
    <textarea id="sl"></textarea>
    <div class="row" style="margin-top:8px"><label>Seg. por slide <input id="ss" type="number" style="width:80px"></label></div>
    <button id="saveCfg">Guardar</button> <button class="sec" id="resetCfg">Restaurar originales</button> <button class="sec" id="openCl">Abrir pantalla del cliente</button> <span id="cfgMsg" style="color:var(--ok);font-weight:700"></span>
@@ -48,8 +48,11 @@ const $=id=>document.getElementById(id);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let tab='',gridKey='';
 const sent={};   // codigo -> unidades que ya se enviaron a TumiSoft en esta venta
-function sendLive(code){const ok=PC.link.send(code);if(ok)sent[code]=(sent[code]||0)+1;return ok}
-function pending(){const codes=[],items=[];PC.state.items.forEach(i=>{const n=Math.max(0,i.qty-(sent[i.code]||0));if(n>0){items.push([i.code,n]);for(let k=0;k<n;k++)codes.push(i.code)}});return{codes,items}}
+const sinCodigo=c=>/^PEND/i.test(c);   // producto de la web con codigo de TumiSoft todavia desconocido
+function sendLive(code){
+  if(sinCodigo(code)){if(PC.link.mode==='live')$('msg').textContent='Este producto aún no tiene código de TumiSoft: agrégalo a mano en TumiSoft.';return false}
+  const ok=PC.link.send(code);if(ok)sent[code]=(sent[code]||0)+1;return ok}
+function pending(){const codes=[],items=[];PC.state.items.forEach(i=>{if(sinCodigo(i.code))return;const n=Math.max(0,i.qty-(sent[i.code]||0));if(n>0){items.push([i.code,n]);for(let k=0;k<n;k++)codes.push(i.code)}});return{codes,items}}
 function render(s){
   const cats=[...new Set(s.catalog.map(p=>p.cat||'Otros'))];
   if(tab&&!cats.includes(tab))tab='';
@@ -114,14 +117,14 @@ renderAd();
 $('openCl').onclick=()=>window.open('cliente.html','pantalla_cliente','width=1280,height=720');
 function loadCfg(){const s0=PC.state;
   $('cat').value=s0.catalog.map(p=>[p.code,p.name,p.price,p.cat||'',p.desc||'',p.img||''].join(';')).join('\n');
-  $('sl').value=s0.slides.map(x=>[x.title,x.sub,x.image].join(';')).join('\n');
+  $('sl').value=s0.slides.map(x=>[x.title,x.sub,x.image,x.until||''].join(';')).join('\n');
   $('ss').value=s0.slideSeconds}
 loadCfg();
 $('saveCfg').onclick=()=>{
   const cat=$('cat').value.split('\n').map(l=>l.split(';').map(x=>x.trim())).filter(a=>a[0]&&a[1])
     .map(a=>{const p={code:a[0],name:a[1],price:parseFloat(String(a[2]).replace(',','.'))||0,cat:a[3]||''};if(a[4])p.desc=a[4];if(a[5])p.img=a[5];return p});
   const sl=$('sl').value.split('\n').map(l=>l.split(';').map(x=>x.trim())).filter(a=>a[2]||a[0])   // vale con imagen o con texto
-    .map(a=>({title:a[0]||'',sub:a[1]||'',image:a[2]||''}));
+    .map(a=>{const s={title:a[0]||'',sub:a[1]||'',image:a[2]||''};if(/^\d{4}-\d{2}-\d{2}$/.test(a[3]||''))s.until=a[3];return s});
   if(!cat.length){$('cfgMsg').textContent='';$('msg').textContent='El catálogo no puede quedar vacío.';return}
   PC.update(s=>{s.catalog=cat;s.slides=sl;s.slideSeconds=Math.max(2,+$('ss').value||8);s.custom={catalog:true,slides:true}});
   gridKey='';render(PC.state);$('msg').textContent='';$('cfgMsg').textContent='✔ Guardado'};

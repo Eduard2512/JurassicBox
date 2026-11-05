@@ -1,7 +1,7 @@
 // Estado compartido entre el panel del colaborador y la pantalla del cliente.
 // Se sincroniza con BroadcastChannel + localStorage (misma PC, sin internet).
 const PC = (() => {
-  const KEY = 'pc_state_v6';
+  const KEY = 'pc_state_v7';
   const ch = 'BroadcastChannel' in window ? new BroadcastChannel('pc_channel') : null;
   const DEFAULT = {
     items: [],            // {code,name,price,qty}
@@ -277,18 +277,51 @@ const PC = (() => {
         "name": "Hot Dog",
         "price": 11.5,
         "cat": "Sandwich Y Embutidos"
+      },
+      {
+        "code": "PEND-CYBER1",
+        "name": "Combo Cyber",
+        "price": 39.5,
+        "cat": "Promos",
+        "desc": "1 Pop corn salada gigante + 2 gaseosas chicas"
+      },
+      {
+        "code": "PEND-CYBER2",
+        "name": "Promo Cyber: 2 Hot Dogs",
+        "price": 26.9,
+        "cat": "Promos",
+        "img": "1677"
       }
     ],
     slides: [
       {
         "title": "",
         "sub": "",
-        "image": "publicidad/avengers-doomsday.jpg"
+        "image": "publicidad/woo-promo.jpg",
+        "until": "2026-11-05"
       },
       {
         "title": "",
         "sub": "",
-        "image": "publicidad/duna-parte-3.jpg"
+        "image": "publicidad/duna-parte-3.jpg",
+        "until": "2026-12-14"
+      },
+      {
+        "title": "",
+        "sub": "",
+        "image": "publicidad/avengers-doomsday.jpg",
+        "until": "2026-12-15"
+      },
+      {
+        "title": "",
+        "sub": "",
+        "image": "publicidad/stray-kids.jpg",
+        "until": "2026-11-08"
+      },
+      {
+        "title": "",
+        "sub": "",
+        "image": "publicidad/trabaja-con-nosotros.jpg"
       },
       {
         "title": "",
@@ -298,27 +331,8 @@ const PC = (() => {
       {
         "title": "",
         "sub": "",
-        "image": "publicidad/el-pintor.jpg"
-      },
-      {
-        "title": "",
-        "sub": "",
-        "image": "publicidad/godzilla.jpg"
-      },
-      {
-        "title": "",
-        "sub": "",
-        "image": "publicidad/stray-kids.jpg"
-      },
-      {
-        "title": "",
-        "sub": "",
-        "image": "publicidad/street-fighter.jpg"
-      },
-      {
-        "title": "",
-        "sub": "",
-        "image": "publicidad/trabaja-con-nosotros.jpg"
+        "image": "publicidad/el-pintor.jpg",
+        "until": "2026-11-30"
       }
     ],
     slideSeconds: 8,
@@ -416,7 +430,7 @@ const PC = (() => {
     link: (() => {
       const K = 'pc_link_mode', base = document.title;   // modo: live | end | off
       let q = [], last = 0, timer = 0;
-      const clean = c => String(c || '').replace(/[^A-Za-z0-9]/g, '');
+      const clean = c => /^PEND/i.test(String(c || '')) ? '' : String(c || '').replace(/[^A-Za-z0-9]/g, '');   // PEND-xxx = sin codigo de TumiSoft todavia: no se envia
       const getMode = () => {
         try { const m = localStorage.getItem(K); if (m) return m; return localStorage.getItem('pc_link_on') === '0' ? 'off' : 'live'; }
         catch (e) { return 'live'; }
